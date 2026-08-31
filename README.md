@@ -64,14 +64,27 @@ twice.
 
 ## Getting started
 
+One command brings up the whole stack — Postgres, the API on :5150, and the
+Vite frontend on :5173 (Ctrl-C stops the API and frontend; Postgres is left
+running):
+
+```sh
+./dev.sh
+```
+
+Or run the pieces by hand:
+
 ```sh
 docker compose up -d          # PostgreSQL on :5432
-cargo loco db migrate         # apply migrations
-
-# studios are operator-created; make one and note its id:
-cargo loco task organization:create name:"Sunrise Yoga" timezone:"Asia/Taipei"
-
+cargo loco db migrate         # apply migrations (also runs on boot)
 cargo loco start              # API on :5150
+cd frontend && corepack pnpm dev   # frontend on :5173
+```
+
+Studios are operator-created; make one and note its register link:
+
+```sh
+cargo loco task organization:create name:"Sunrise Yoga" timezone:"Asia/Taipei"
 ```
 
 Each studio has its own register page — `/register/<token>`, where the token is
