@@ -80,6 +80,11 @@ async fn register(
 
     let user = match res {
         Ok(user) => user,
+        // A taken email is a clear, actionable conflict — tell the caller (409)
+        // rather than pretending it worked.
+        Err(ModelError::EntityAlreadyExists) => {
+            return Err(ModelError::EntityAlreadyExists.into());
+        }
         Err(err) => {
             tracing::info!(
                 message = err.to_string(),

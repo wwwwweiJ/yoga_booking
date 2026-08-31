@@ -68,6 +68,38 @@ async fn can_book_a_class() {
 
 #[tokio::test]
 #[serial]
+async fn cannot_book_a_started_class() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_user_login(&request, &ctx).await;
+
+        // Create a class whose start time is already in the past.
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let class: Value = request
+            .post("/api/classes")
+            .add_header(auth_key, auth_value)
+            .json(&serde_json::json!({
+                "title": "Past Class",
+                "instructor": "Mei",
+                "starts_at": "2020-01-01T10:00:00Z",
+                "duration_minutes": 60,
+                "capacity": 20,
+            }))
+            .await
+            .json();
+        let class_id = class["id"].as_i64().unwrap();
+
+        let response = book(&request, &user.token, class_id).await;
+        assert_eq!(
+            response.status_code(),
+            400,
+            "a class that has already started can't be booked"
+        );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn booking_unknown_class_returns_400() {
     request::<App, _, _>(|request, ctx| async move {
         let user = prepare_data::init_user_login(&request, &ctx).await;

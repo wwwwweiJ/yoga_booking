@@ -477,6 +477,33 @@ async fn can_resend_verification_email() {
 
 #[tokio::test]
 #[serial]
+async fn register_duplicate_email_returns_409() {
+    configure_insta!();
+
+    request::<App, _, _>(|request, ctx| async move {
+        let organization = prepare_data::seed_organization(&ctx, "Studio", "Asia/Taipei").await;
+        let payload = serde_json::json!({
+            "name": "loco",
+            "email": "dup@loco.com",
+            "password": "12341234",
+            "organization_token": organization.public_id,
+        });
+
+        let first = request.post("/api/auth/register").json(&payload).await;
+        assert_eq!(first.status_code(), 200, "first registration succeeds");
+
+        let second = request.post("/api/auth/register").json(&payload).await;
+        assert_eq!(
+            second.status_code(),
+            409,
+            "registering a taken email is a conflict, not a silent success"
+        );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn cannot_resend_email_if_already_verified() {
     configure_insta!();
 

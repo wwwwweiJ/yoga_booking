@@ -87,6 +87,11 @@ async fn create(
         return bad_request(format!("class_id {} does not exist", body.class_id));
     };
 
+    // Can't book a class that has already started.
+    if class.starts_at.with_timezone(&chrono::Utc) <= chrono::Utc::now() {
+        return bad_request(format!("class {} has already started", class.id));
+    }
+
     // Already booked? Friendlier than letting the unique index throw.
     let already = bookings::Entity::find()
         .filter(bookings::Column::UserId.eq(user.id))
