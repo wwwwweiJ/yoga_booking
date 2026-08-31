@@ -1,0 +1,11 @@
+---
+source: tests/models/organizations.rs
+assertion_line: 82
+expression: "found.map(|org| (org.name, org.timezone))"
+---
+Some(
+    (
+        "Moonlight Yoga",
+        "Asia/Tokyo",
+    ),
+)

@@ -1,0 +1,10 @@
+---
+source: tests/models/classes.rs
+assertion_line: 61
+expression: "(class.title, class.instructor, class.capacity)"
+---
+(
+    "Vinyasa Flow",
+    "Mei",
+    20,
+)

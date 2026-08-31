@@ -1,0 +1,10 @@
+---
+source: tests/models/classes.rs
+assertion_line: 86
+expression: res
+---
+Err(
+    Custom(
+        "{\"capacity\":[{\"code\":\"range\",\"message\":\"Capacity must be at least 1.\"}],\"duration_minutes\":[{\"code\":\"range\",\"message\":\"Duration must be at least 1 minute.\"}],\"instructor\":[{\"code\":\"length\",\"message\":\"Instructor must be at least 2 characters long.\"}],\"title\":[{\"code\":\"length\",\"message\":\"Title must be at least 2 characters long.\"}]}",
+    ),
+)

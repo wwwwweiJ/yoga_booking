@@ -1,0 +1,26 @@
+# 本地開發用資料庫。對應 config/development.yaml 的預設連線
+#   postgres://loco:loco@localhost:5432/yoga_booking_development
+# 用法：
+#   docker compose up -d      # 啟動
+#   docker compose down       # 停止（保留資料）
+#   docker compose down -v    # 停止並清空資料
+services:
+  postgres:
+    image: postgres:16
+    container_name: yoga_booking_pg
+    environment:
+      POSTGRES_USER: loco
+      POSTGRES_PASSWORD: loco
+      POSTGRES_DB: yoga_booking_development
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U loco -d yoga_booking_development"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pg_data:

@@ -1,0 +1,10 @@
+---
+source: tests/models/organizations.rs
+assertion_line: 56
+expression: res
+---
+Err(
+    Custom(
+        "{\"name\":[{\"code\":\"length\",\"message\":\"Name must be at least 2 characters long.\"}],\"timezone\":[{\"code\":\"length\",\"message\":\"Timezone must be present.\"}]}",
+    ),
+)

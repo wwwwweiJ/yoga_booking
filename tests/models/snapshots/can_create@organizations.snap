@@ -1,0 +1,9 @@
+---
+source: tests/models/organizations.rs
+assertion_line: 36
+expression: "(organization.name, organization.timezone)"
+---
+(
+    "Sunrise Yoga",
+    "Asia/Taipei",
+)

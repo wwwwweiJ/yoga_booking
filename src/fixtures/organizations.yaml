@@ -1,0 +1,7 @@
+---
+- id: 1
+  name: Seed Studio
+  timezone: Asia/Taipei
+  public_id: 00000000-0000-0000-0000-000000000001
+  created_at: "2023-11-12T12:34:56.789Z"
+  updated_at: "2023-11-12T12:34:56.789Z"
