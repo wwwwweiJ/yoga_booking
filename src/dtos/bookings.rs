@@ -20,12 +20,12 @@ pub struct Booking {
 
 impl Booking {
     #[must_use]
-    pub fn from_parts(booking: bookings::Model, class: classes::Model) -> Self {
+    pub fn from_parts(booking: bookings::Model, class: classes::Model, class_booked: i64) -> Self {
         Self {
             id: booking.id,
             class_id: booking.class_id,
             created_at: booking.created_at.to_rfc3339(),
-            class: Class::from(class),
+            class: Class::from_parts(class, class_booked),
         }
     }
 }

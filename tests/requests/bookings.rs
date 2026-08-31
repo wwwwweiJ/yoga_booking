@@ -62,6 +62,32 @@ async fn can_book_a_class() {
         let body: Value = response.json();
         assert_eq!(body["class_id"].as_i64(), Some(class_id));
         assert_eq!(body["class"]["title"], "Vinyasa Flow");
+        assert_eq!(
+            body["class"]["spots_left"].as_i64(),
+            Some(19),
+            "booking takes one of the 20 seats"
+        );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn booking_reduces_spots_left() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_user_login(&request, &ctx).await;
+        let class_id = seed_class(&request, &user.token, 3).await;
+
+        book(&request, &user.token, class_id).await;
+
+        // The class endpoint reflects the seat that was just taken.
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let class: Value = request
+            .get(&format!("/api/classes/{class_id}"))
+            .add_header(auth_key, auth_value)
+            .await
+            .json();
+        assert_eq!(class["spots_left"].as_i64(), Some(2), "3 capacity - 1 booked");
     })
     .await;
 }

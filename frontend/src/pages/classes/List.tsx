@@ -8,6 +8,10 @@ function formatStartsAt(iso: string): string {
   return new Date(iso).toLocaleString();
 }
 
+function hasStarted(iso: string): boolean {
+  return new Date(iso).getTime() <= Date.now();
+}
+
 export function ClassesList() {
   const queryClient = useQueryClient();
 
@@ -64,12 +68,15 @@ export function ClassesList() {
               <th>Instructor</th>
               <th>Starts</th>
               <th>Duration</th>
-              <th>Capacity</th>
+              <th>Spots</th>
               <th aria-label="actions" />
             </tr>
           </thead>
           <tbody>
-            {data.items.map((klass) => (
+            {data.items.map((klass) => {
+              const started = hasStarted(klass.starts_at);
+              const full = klass.spots_left <= 0;
+              return (
               <tr key={klass.id}>
                 <td>
                   <Link to={`/classes/${klass.id}/edit`}>{klass.title}</Link>
@@ -77,11 +84,17 @@ export function ClassesList() {
                 <td>{klass.instructor}</td>
                 <td>{formatStartsAt(klass.starts_at)}</td>
                 <td>{klass.duration_minutes} min</td>
-                <td>{klass.capacity}</td>
+                <td>
+                  {started
+                    ? "Started"
+                    : full
+                      ? "Full"
+                      : `${klass.spots_left} / ${klass.capacity} left`}
+                </td>
                 <td>
                   <button
                     type="button"
-                    disabled={book.isPending}
+                    disabled={book.isPending || full || started}
                     onClick={() => book.mutate(klass.id)}
                   >
                     Book
@@ -99,7 +112,8 @@ export function ClassesList() {
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       )}

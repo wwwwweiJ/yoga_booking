@@ -43,21 +43,27 @@ async fn list_mine(
     )
     .await?;
 
-    // Batch-load the booked classes (one query, no N+1) and stitch them onto
-    // each booking to build the typed page by hand.
+    // Batch-load the booked classes and their booking counts (two queries, no
+    // N+1) and stitch them onto each booking to build the typed page by hand.
     let class_ids: Vec<i64> = res.page.iter().map(|b| b.class_id).collect();
     let classes: HashMap<i64, classes::Model> = classes::Entity::find()
-        .filter(classes::Column::Id.is_in(class_ids))
+        .filter(classes::Column::Id.is_in(class_ids.clone()))
         .all(&ctx.db)
         .await?
         .into_iter()
         .map(|c| (c.id, c))
         .collect();
+    let counts = bookings::Model::counts_by_class(&ctx.db, &class_ids).await?;
 
     let items: Vec<Booking> = res
         .page
         .into_iter()
-        .filter_map(|b| classes.get(&b.class_id).cloned().map(|c| Booking::from_parts(b, c)))
+        .filter_map(|b| {
+            classes.get(&b.class_id).cloned().map(|c| {
+                let booked = counts.get(&b.class_id).copied().unwrap_or(0);
+                Booking::from_parts(b, c, booked)
+            })
+        })
         .collect();
 
     format::json(Page {
@@ -120,9 +126,11 @@ async fn create(
     .insert(&ctx.db)
     .await?;
 
+    // This booking takes one of the seats counted above.
+    let class_booked = i64::try_from(booked).unwrap_or(0) + 1;
     format::render()
         .status(StatusCode::CREATED)
-        .json(Booking::from_parts(booking, class))
+        .json(Booking::from_parts(booking, class, class_booked))
 }
 
 #[debug_handler]

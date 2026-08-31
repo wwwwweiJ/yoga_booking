@@ -81,6 +81,11 @@ async fn can_create_in_my_org() {
             Some(user.organization_id),
             "the class is created in the caller's studio, implicitly"
         );
+        assert_eq!(
+            body["spots_left"].as_i64(),
+            Some(20),
+            "a fresh class has all its seats free"
+        );
     })
     .await;
 }

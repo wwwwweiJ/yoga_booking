@@ -4,4 +4,8 @@
  * The wire shape of a class session. `starts_at` is an RFC 3339 string (same
  * policy as the timestamps in [`crate::dtos::organizations::Organization`]).
  */
-export type Class = { id: number, organization_id: number, title: string, instructor: string, starts_at: string, duration_minutes: number, capacity: number, created_at: string, updated_at: string, };
+export type Class = { id: number, organization_id: number, title: string, instructor: string, starts_at: string, duration_minutes: number, capacity: number, 
+/**
+ * Remaining seats = `capacity - current bookings`, never negative.
+ */
+spots_left: number, created_at: string, updated_at: string, };

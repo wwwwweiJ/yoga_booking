@@ -19,12 +19,19 @@ pub struct Class {
     pub duration_minutes: i32,
     #[ts(type = "number")]
     pub capacity: i32,
+    /// Remaining seats = `capacity - current bookings`, never negative.
+    #[ts(type = "number")]
+    pub spots_left: i32,
     pub created_at: String,
     pub updated_at: String,
 }
 
-impl From<classes::Model> for Class {
-    fn from(c: classes::Model) -> Self {
+impl Class {
+    /// Build the DTO from a class row plus how many bookings it already has.
+    /// (`spots_left` can't come from the model alone, so there's no `From`.)
+    #[must_use]
+    pub fn from_parts(c: classes::Model, booked: i64) -> Self {
+        let spots_left = i32::try_from((i64::from(c.capacity) - booked).max(0)).unwrap_or(0);
         Self {
             id: c.id,
             organization_id: c.organization_id,
@@ -33,6 +40,7 @@ impl From<classes::Model> for Class {
             starts_at: c.starts_at.to_rfc3339(),
             duration_minutes: c.duration_minutes,
             capacity: c.capacity,
+            spots_left,
             created_at: c.created_at.to_rfc3339(),
             updated_at: c.updated_at.to_rfc3339(),
         }

@@ -26,10 +26,12 @@ organization (a studio)  ── has many ──▶ users (members)
   registration) and cannot cross to another; using a different studio means a
   new account.
 - **Classes** — belong to a studio; `title`, `instructor`, `starts_at`,
-  `duration_minutes`, `capacity`. Deleting a studio cascades to its classes.
+  `duration_minutes`, `capacity`. The API also returns `spots_left`
+  (`capacity` minus current bookings). Deleting a studio cascades to its classes.
 - **Bookings** — a `(user, class)` pair. A user can't book the same class
-  twice (enforced by a unique index) and can't book a class that's already at
-  capacity. You only see and cancel your own bookings.
+  twice (enforced by a unique index), can't book one that's already at capacity,
+  and can't book one that has already started. You only see and cancel your own
+  bookings.
 
 **Tenancy:** every request is scoped to the caller's studio. You only ever see
 and manage your own studio's classes, can only book classes there, and the

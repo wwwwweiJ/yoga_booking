@@ -6,7 +6,7 @@ use crate::{
         classes::{Class, CreateClassParams, UpdateClassParams},
         common::Page,
     },
-    models::_entities::{classes, users},
+    models::_entities::{bookings, classes, users},
 };
 
 /// The caller's studio id. Every class read and write is scoped to it — a user
@@ -34,6 +34,15 @@ fn parse_starts_at(value: &str) -> Result<DateTimeWithTimeZone> {
         .map_err(|_| Error::BadRequest("starts_at must be an RFC 3339 datetime".to_string()))
 }
 
+/// Current booking count for a single class (for its `spots_left`).
+async fn booked_count(ctx: &AppContext, class_id: i64) -> Result<i64> {
+    Ok(bookings::Model::counts_by_class(&ctx.db, &[class_id])
+        .await?
+        .get(&class_id)
+        .copied()
+        .unwrap_or(0))
+}
+
 #[debug_handler]
 async fn list(
     auth: auth::JWT,
@@ -48,7 +57,26 @@ async fn list(
         &pagination,
     )
     .await?;
-    format::json(Page::<Class>::from_query(res))
+
+    // One booking-count query for the whole page, then attach spots_left.
+    let class_ids: Vec<i64> = res.page.iter().map(|c| c.id).collect();
+    let counts = bookings::Model::counts_by_class(&ctx.db, &class_ids).await?;
+    let items = res
+        .page
+        .into_iter()
+        .map(|c| {
+            let booked = counts.get(&c.id).copied().unwrap_or(0);
+            Class::from_parts(c, booked)
+        })
+        .collect();
+
+    format::json(Page {
+        items,
+        page: res.meta.page,
+        page_size: res.meta.page_size,
+        total_pages: res.meta.total_pages,
+        total_items: res.meta.total_items,
+    })
 }
 
 #[debug_handler]
@@ -58,7 +86,9 @@ async fn get_one(
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
     let org_id = current_org_id(&auth, &ctx).await?;
-    format::json(Class::from(load_item(&ctx, id, org_id).await?))
+    let item = load_item(&ctx, id, org_id).await?;
+    let booked = booked_count(&ctx, item.id).await?;
+    format::json(Class::from_parts(item, booked))
 }
 
 #[debug_handler]
@@ -82,9 +112,10 @@ async fn create(
     };
     item.validate()?;
     let item = item.insert(&ctx.db).await?;
+    // A brand-new class has no bookings yet.
     format::render()
         .status(StatusCode::CREATED)
-        .json(Class::from(item))
+        .json(Class::from_parts(item, 0))
 }
 
 #[debug_handler]
@@ -104,7 +135,8 @@ async fn update(
     item.capacity = ActiveValue::set(params.capacity);
     item.validate()?;
     let item = item.update(&ctx.db).await?;
-    format::json(Class::from(item))
+    let booked = booked_count(&ctx, item.id).await?;
+    format::json(Class::from_parts(item, booked))
 }
 
 #[debug_handler]
