@@ -75,7 +75,8 @@ export function Register() {
   }
 
   return (
-    <div>
+    <div className="auth">
+      <div className="card">
       <h1>Join {studio.data.name}</h1>
       <form onSubmit={handleSubmit}>
         <div>
@@ -116,9 +117,10 @@ export function Register() {
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
-      <p>
+      <p className="switch">
         Already have an account? <Link to="/login">Log in</Link>
       </p>
+      </div>
     </div>
   );
 }

@@ -39,7 +39,8 @@ export function Login() {
   }
 
   return (
-    <div>
+    <div className="auth">
+      <div className="card">
       <h1>Log in</h1>
       <form onSubmit={handleSubmit}>
         <div>
@@ -71,11 +72,11 @@ export function Login() {
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
-      <p>
+      <p className="switch">
         Don&apos;t have an account? Registration is per-studio — open the
-        register link your studio gave you (
-        <code>/register/&lt;token&gt;</code>).
+        register link your studio gave you.
       </p>
+      </div>
     </div>
   );
 }

@@ -53,14 +53,17 @@ export function ClassesList() {
 
   return (
     <div>
-      <h1>Classes</h1>
-      <p>
-        <Link to="/classes/new">New class</Link>
-      </p>
+      <div className="page-header">
+        <h1>Classes</h1>
+        <Link to="/classes/new" className="btn">
+          New class
+        </Link>
+      </div>
 
       {data.items.length === 0 ? (
-        <p>No classes yet.</p>
+        <div className="card empty">No classes yet.</div>
       ) : (
+        <div className="card">
         <table>
           <thead>
             <tr>
@@ -85,11 +88,15 @@ export function ClassesList() {
                 <td>{formatStartsAt(klass.starts_at)}</td>
                 <td>{klass.duration_minutes} min</td>
                 <td>
-                  {started
-                    ? "Started"
-                    : full
-                      ? "Full"
-                      : `${klass.spots_left} / ${klass.capacity} left`}
+                  {started ? (
+                    <span className="badge badge-muted">Started</span>
+                  ) : full ? (
+                    <span className="badge badge-full">Full</span>
+                  ) : (
+                    <span className="badge badge-open">
+                      {klass.spots_left} / {klass.capacity} left
+                    </span>
+                  )}
                 </td>
                 <td>
                   <button
@@ -101,6 +108,7 @@ export function ClassesList() {
                   </button>{" "}
                   <button
                     type="button"
+                    className="btn-danger"
                     disabled={remove.isPending}
                     onClick={() => {
                       if (window.confirm(`Delete "${klass.title}"?`)) {
@@ -116,9 +124,12 @@ export function ClassesList() {
             })}
           </tbody>
         </table>
+        </div>
       )}
 
-      <p>{data.total_items} total</p>
+      <p className="muted" style={{ marginTop: "0.75rem" }}>
+        {data.total_items} total
+      </p>
     </div>
   );
 }

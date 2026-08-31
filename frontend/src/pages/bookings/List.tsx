@@ -33,14 +33,17 @@ export function BookingsList() {
 
   return (
     <div>
-      <h1>My bookings</h1>
+      <div className="page-header">
+        <h1>My bookings</h1>
+      </div>
 
       {data.items.length === 0 ? (
-        <p>
+        <div className="card empty">
           You haven&apos;t booked anything yet. Browse{" "}
           <Link to="/classes">classes</Link>.
-        </p>
+        </div>
       ) : (
+        <div className="card">
         <table>
           <thead>
             <tr>
@@ -59,6 +62,7 @@ export function BookingsList() {
                 <td>
                   <button
                     type="button"
+                    className="btn-danger"
                     disabled={cancel.isPending}
                     onClick={() => {
                       if (window.confirm(`Cancel "${booking.class.title}"?`)) {
@@ -73,9 +77,12 @@ export function BookingsList() {
             ))}
           </tbody>
         </table>
+        </div>
       )}
 
-      <p>{data.total_items} total</p>
+      <p className="muted" style={{ marginTop: "0.75rem" }}>
+        {data.total_items} total
+      </p>
     </div>
   );
 }

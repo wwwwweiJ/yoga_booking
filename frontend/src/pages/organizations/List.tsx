@@ -25,16 +25,20 @@ export function OrganizationsList() {
 
   return (
     <div>
-      <h1>My studio</h1>
+      <div className="page-header">
+        <h1>My studio</h1>
+      </div>
       {studio ? (
-        <dl>
-          <dt>Name</dt>
-          <dd>{studio.name}</dd>
-          <dt>Timezone</dt>
-          <dd>{studio.timezone}</dd>
-        </dl>
+        <div className="card">
+          <dl>
+            <dt>Name</dt>
+            <dd>{studio.name}</dd>
+            <dt>Timezone</dt>
+            <dd>{studio.timezone}</dd>
+          </dl>
+        </div>
       ) : (
-        <p>You are not attached to a studio.</p>
+        <div className="card empty">You are not attached to a studio.</div>
       )}
     </div>
   );

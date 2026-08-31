@@ -82,7 +82,10 @@ export function ClassForm() {
 
   return (
     <div>
-      <h1>{isEdit ? "Edit class" : "New class"}</h1>
+      <div className="page-header">
+        <h1>{isEdit ? "Edit class" : "New class"}</h1>
+      </div>
+      <div className="card">
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="title">Title</label>
@@ -143,6 +146,7 @@ export function ClassForm() {
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
+      </div>
     </div>
   );
 }
