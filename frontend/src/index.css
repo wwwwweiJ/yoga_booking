@@ -289,6 +289,20 @@ select:focus {
   border-color: var(--primary);
   box-shadow: var(--ring);
 }
+input.is-invalid,
+select.is-invalid {
+  border-color: var(--danger);
+}
+input.is-invalid:focus,
+select.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(176, 86, 63, 0.2);
+}
+
+.field-error {
+  margin: 0.35rem 0 0;
+  color: var(--danger);
+  font-size: 0.82rem;
+}
 
 /* ------------------------------ Feedback --------------------------------- */
 

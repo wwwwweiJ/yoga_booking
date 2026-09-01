@@ -34,6 +34,7 @@ export function ClassForm() {
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [capacity, setCapacity] = useState(20);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const existing = useQuery({
     queryKey: ["classes", classId],
@@ -68,17 +69,19 @@ export function ClassForm() {
       navigate("/classes");
     },
     onError: (err) => {
-      setError(
-        err instanceof ApiClientError
-          ? err.message
-          : t("classes.form.saveFailed"),
-      );
+      if (err instanceof ApiClientError) {
+        setError(err.message);
+        setFieldErrors(err.fieldErrors);
+      } else {
+        setError(t("classes.form.saveFailed"));
+      }
     },
   });
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    setFieldErrors({});
     save.mutate();
   }
 
@@ -102,9 +105,13 @@ export function ClassForm() {
             type="text"
             required
             minLength={2}
+            className={fieldErrors.title ? "is-invalid" : undefined}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+          {fieldErrors.title && (
+            <p className="field-error">{fieldErrors.title}</p>
+          )}
         </div>
         <div>
           <label htmlFor="instructor">{t("classes.col.instructor")}</label>
@@ -113,9 +120,13 @@ export function ClassForm() {
             type="text"
             required
             minLength={2}
+            className={fieldErrors.instructor ? "is-invalid" : undefined}
             value={instructor}
             onChange={(e) => setInstructor(e.target.value)}
           />
+          {fieldErrors.instructor && (
+            <p className="field-error">{fieldErrors.instructor}</p>
+          )}
         </div>
         <div>
           <label htmlFor="startsAt">{t("classes.form.startsAt")}</label>
@@ -134,9 +145,13 @@ export function ClassForm() {
             type="number"
             required
             min={1}
+            className={fieldErrors.duration_minutes ? "is-invalid" : undefined}
             value={durationMinutes}
             onChange={(e) => setDurationMinutes(Number(e.target.value))}
           />
+          {fieldErrors.duration_minutes && (
+            <p className="field-error">{fieldErrors.duration_minutes}</p>
+          )}
         </div>
         <div>
           <label htmlFor="capacity">{t("classes.form.capacity")}</label>
@@ -145,9 +160,13 @@ export function ClassForm() {
             type="number"
             required
             min={1}
+            className={fieldErrors.capacity ? "is-invalid" : undefined}
             value={capacity}
             onChange={(e) => setCapacity(Number(e.target.value))}
           />
+          {fieldErrors.capacity && (
+            <p className="field-error">{fieldErrors.capacity}</p>
+          )}
         </div>
         <button type="submit" disabled={save.isPending}>
           {save.isPending ? t("classes.form.saving") : t("classes.form.save")}
