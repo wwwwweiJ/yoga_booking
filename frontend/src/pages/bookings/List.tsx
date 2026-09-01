@@ -1,13 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { cancelBooking, listBookings } from "../../api/bookings";
-
-function formatStartsAt(iso: string): string {
-  return new Date(iso).toLocaleString();
-}
+import { useI18n } from "../../i18n";
 
 export function BookingsList() {
   const queryClient = useQueryClient();
+  const { t, locale } = useI18n();
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["bookings"],
@@ -20,13 +18,13 @@ export function BookingsList() {
   });
 
   if (isPending) {
-    return <p>Loading…</p>;
+    return <p>{t("common.loading")}</p>;
   }
 
   if (isError) {
     return (
       <p role="alert">
-        {error instanceof Error ? error.message : "Failed to load bookings"}
+        {error instanceof Error ? error.message : t("bookings.loadFailed")}
       </p>
     );
   }
@@ -34,22 +32,21 @@ export function BookingsList() {
   return (
     <div>
       <div className="page-header">
-        <h1>My bookings</h1>
+        <h1>{t("bookings.title")}</h1>
       </div>
 
       {data.items.length === 0 ? (
         <div className="card empty">
-          You haven&apos;t booked anything yet. Browse{" "}
-          <Link to="/classes">classes</Link>.
+          {t("bookings.empty")} <Link to="/classes">{t("bookings.browse")}</Link>
         </div>
       ) : (
         <div className="card">
         <table>
           <thead>
             <tr>
-              <th>Class</th>
-              <th>Instructor</th>
-              <th>Starts</th>
+              <th>{t("bookings.col.class")}</th>
+              <th>{t("bookings.col.instructor")}</th>
+              <th>{t("bookings.col.starts")}</th>
               <th aria-label="actions" />
             </tr>
           </thead>
@@ -58,19 +55,27 @@ export function BookingsList() {
               <tr key={booking.id}>
                 <td>{booking.class.title}</td>
                 <td>{booking.class.instructor}</td>
-                <td>{formatStartsAt(booking.class.starts_at)}</td>
+                <td>
+                  {new Date(booking.class.starts_at).toLocaleString(locale)}
+                </td>
                 <td>
                   <button
                     type="button"
                     className="btn-danger"
                     disabled={cancel.isPending}
                     onClick={() => {
-                      if (window.confirm(`Cancel "${booking.class.title}"?`)) {
+                      if (
+                        window.confirm(
+                          t("bookings.cancelConfirm", {
+                            title: booking.class.title,
+                          }),
+                        )
+                      ) {
                         cancel.mutate(booking.id);
                       }
                     }}
                   >
-                    Cancel
+                    {t("bookings.cancel")}
                   </button>
                 </td>
               </tr>
@@ -81,7 +86,7 @@ export function BookingsList() {
       )}
 
       <p className="muted" style={{ marginTop: "0.75rem" }}>
-        {data.total_items} total
+        {t("common.total", { count: data.total_items })}
       </p>
     </div>
   );

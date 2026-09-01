@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router";
 import { ApiClientError, post } from "../api/client";
+import { useI18n } from "../i18n";
 import { setToken } from "./token";
 
 interface LoginResponse {
@@ -13,6 +14,7 @@ interface LoginResponse {
 
 export function Login() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isPending, setIsPending] = useState(false);
@@ -31,7 +33,7 @@ export function Login() {
       navigate("/");
     } catch (err) {
       setError(
-        err instanceof ApiClientError ? err.message : "Failed to log in",
+        err instanceof ApiClientError ? err.message : t("auth.login.failed"),
       );
     } finally {
       setIsPending(false);
@@ -41,10 +43,10 @@ export function Login() {
   return (
     <div className="auth">
       <div className="card">
-      <h1>Log in</h1>
+      <h1>{t("auth.login.title")}</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t("auth.email")}</label>
           <input
             id="email"
             name="email"
@@ -56,7 +58,7 @@ export function Login() {
           />
         </div>
         <div>
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">{t("auth.password")}</label>
           <input
             id="password"
             name="password"
@@ -68,14 +70,11 @@ export function Login() {
           />
         </div>
         <button type="submit" disabled={isPending}>
-          {isPending ? "Logging in…" : "Log in"}
+          {isPending ? t("auth.login.submitting") : t("auth.login.submit")}
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
-      <p className="switch">
-        Don&apos;t have an account? Registration is per-studio — open the
-        register link your studio gave you.
-      </p>
+      <p className="switch">{t("auth.login.switch")}</p>
       </div>
     </div>
   );

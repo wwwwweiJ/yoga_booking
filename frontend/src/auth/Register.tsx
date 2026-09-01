@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "react-router";
 import { ApiClientError, post } from "../api/client";
 import { getPublicOrganization } from "../api/public";
+import { useI18n } from "../i18n";
 import { setToken } from "./token";
 
 interface LoginResponse {
@@ -19,6 +20,7 @@ interface LoginResponse {
 export function Register() {
   const { token } = useParams();
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const studio = useQuery({
     queryKey: ["public-organization", token],
@@ -52,7 +54,7 @@ export function Register() {
       navigate("/");
     } catch (err) {
       setError(
-        err instanceof ApiClientError ? err.message : "Failed to register",
+        err instanceof ApiClientError ? err.message : t("auth.register.failed"),
       );
     } finally {
       setIsPending(false);
@@ -60,27 +62,22 @@ export function Register() {
   }
 
   if (token === undefined) {
-    return <p role="alert">Invalid studio link.</p>;
+    return <p role="alert">{t("auth.register.invalidLink")}</p>;
   }
   if (studio.isPending) {
-    return <p>Loading…</p>;
+    return <p>{t("common.loading")}</p>;
   }
   if (studio.isError) {
-    return (
-      <p role="alert">
-        This studio could not be found — check the register link your studio
-        gave you.
-      </p>
-    );
+    return <p role="alert">{t("auth.register.notFound")}</p>;
   }
 
   return (
     <div className="auth">
       <div className="card">
-      <h1>Join {studio.data.name}</h1>
+      <h1>{t("auth.register.join", { studio: studio.data.name })}</h1>
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="name">Name</label>
+          <label htmlFor="name">{t("auth.name")}</label>
           <input
             id="name"
             type="text"
@@ -91,7 +88,7 @@ export function Register() {
           />
         </div>
         <div>
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t("auth.email")}</label>
           <input
             id="email"
             type="email"
@@ -102,7 +99,7 @@ export function Register() {
           />
         </div>
         <div>
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">{t("auth.password")}</label>
           <input
             id="password"
             type="password"
@@ -113,12 +110,15 @@ export function Register() {
           />
         </div>
         <button type="submit" disabled={isPending}>
-          {isPending ? "Creating…" : "Create account"}
+          {isPending
+            ? t("auth.register.submitting")
+            : t("auth.register.submit")}
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
       <p className="switch">
-        Already have an account? <Link to="/login">Log in</Link>
+        {t("auth.register.haveAccount")}{" "}
+        <Link to="/login">{t("common.loginLink")}</Link>
       </p>
       </div>
     </div>

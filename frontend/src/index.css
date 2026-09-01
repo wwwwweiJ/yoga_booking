@@ -107,6 +107,33 @@ h2 {
   text-decoration: none;
 }
 
+.lang-switch {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 0.35rem;
+  padding: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.lang-switch button {
+  padding: 0.2rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+}
+.lang-switch button:hover:not(:disabled) {
+  background: transparent;
+  color: var(--text);
+}
+.lang-switch button.is-active {
+  background: var(--primary);
+  color: #fff;
+}
+
 .container {
   max-width: 900px;
   margin: 0 auto;

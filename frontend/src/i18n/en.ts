@@ -1,0 +1,83 @@
+// English is the source of truth: its keys define the TranslationKey type, so
+// every other locale must provide exactly the same set (checked at compile
+// time). `{name}`-style placeholders are filled by t()'s second argument.
+export const en = {
+  "nav.classes": "Classes",
+  "nav.bookings": "My Bookings",
+  "nav.studio": "My Studio",
+  "nav.logout": "Log out",
+  "nav.login": "Log in",
+
+  "common.loading": "Loading…",
+  "common.total": "{count} total",
+  "common.loginLink": "Log in",
+
+  "home.title": "Breathe. Book. Flow.",
+  "home.subtitle":
+    "Reserve your place in classes at your yoga studio — see what's on, grab a spot, and keep track of your bookings.",
+  "home.browse": "Browse classes",
+
+  "auth.email": "Email",
+  "auth.password": "Password",
+  "auth.name": "Name",
+  "auth.login.title": "Log in",
+  "auth.login.submit": "Log in",
+  "auth.login.submitting": "Logging in…",
+  "auth.login.failed": "Failed to log in",
+  "auth.login.switch":
+    "Don't have an account? Registration is per-studio — use the register link your studio gave you.",
+  "auth.register.join": "Join {studio}",
+  "auth.register.submit": "Create account",
+  "auth.register.submitting": "Creating…",
+  "auth.register.failed": "Failed to register",
+  "auth.register.invalidLink": "Invalid studio link.",
+  "auth.register.notFound":
+    "This studio could not be found — check the register link your studio gave you.",
+  "auth.register.haveAccount": "Already have an account?",
+
+  "classes.title": "Classes",
+  "classes.new": "New class",
+  "classes.loadFailed": "Failed to load classes",
+  "classes.empty": "No classes yet.",
+  "classes.col.title": "Title",
+  "classes.col.instructor": "Instructor",
+  "classes.col.starts": "Starts",
+  "classes.col.duration": "Duration",
+  "classes.col.spots": "Spots",
+  "classes.minutes": "{count} min",
+  "classes.badge.started": "Started",
+  "classes.badge.full": "Full",
+  "classes.badge.left": "{left} / {capacity} left",
+  "classes.book": "Book",
+  "classes.booked": "Booked!",
+  "classes.bookFailed": "Could not book",
+  "classes.delete": "Delete",
+  "classes.deleteConfirm": 'Delete "{title}"?',
+
+  "classes.form.editTitle": "Edit class",
+  "classes.form.newTitle": "New class",
+  "classes.form.startsAt": "Starts at",
+  "classes.form.duration": "Duration (minutes)",
+  "classes.form.capacity": "Capacity",
+  "classes.form.save": "Save",
+  "classes.form.saving": "Saving…",
+  "classes.form.saveFailed": "Failed to save",
+
+  "bookings.title": "My bookings",
+  "bookings.loadFailed": "Failed to load bookings",
+  "bookings.empty": "You haven't booked anything yet.",
+  "bookings.browse": "Browse classes",
+  "bookings.col.class": "Class",
+  "bookings.col.instructor": "Instructor",
+  "bookings.col.starts": "Starts",
+  "bookings.cancel": "Cancel",
+  "bookings.cancelConfirm": 'Cancel "{title}"?',
+
+  "studio.title": "My studio",
+  "studio.name": "Name",
+  "studio.timezone": "Timezone",
+  "studio.none": "You are not attached to a studio.",
+  "studio.loadFailed": "Failed to load your studio",
+} as const;
+
+export type TranslationKey = keyof typeof en;

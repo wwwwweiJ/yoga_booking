@@ -1,9 +1,11 @@
 import { Link, Outlet, useNavigate } from 'react-router'
 import { clearToken, getToken } from './auth/token'
+import { LOCALES, useI18n } from './i18n'
 
 export function App() {
   const navigate = useNavigate()
   const isAuthenticated = getToken() !== null
+  const { t, locale, setLocale } = useI18n()
 
   function handleLogout() {
     clearToken()
@@ -20,24 +22,36 @@ export function App() {
           {isAuthenticated && (
             <>
               <Link to="/classes" className="nav-link">
-                Classes
+                {t('nav.classes')}
               </Link>
               <Link to="/bookings" className="nav-link">
-                My Bookings
+                {t('nav.bookings')}
               </Link>
               <Link to="/organizations" className="nav-link">
-                My Studio
+                {t('nav.studio')}
               </Link>
               <button type="button" className="btn-ghost" onClick={handleLogout}>
-                Log out
+                {t('nav.logout')}
               </button>
             </>
           )}
           {!isAuthenticated && (
             <Link to="/login" className="nav-link">
-              Log in
+              {t('nav.login')}
             </Link>
           )}
+          <div className="lang-switch">
+            {LOCALES.map(({ code, label }) => (
+              <button
+                key={code}
+                type="button"
+                className={code === locale ? 'is-active' : ''}
+                onClick={() => setLocale(code)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
       </nav>
       <main className="container">

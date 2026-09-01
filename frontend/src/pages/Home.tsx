@@ -1,23 +1,22 @@
 import { Link } from "react-router";
 import { getToken } from "../auth/token";
+import { useI18n } from "../i18n";
 
 export function Home() {
   const isAuthenticated = getToken() !== null;
+  const { t } = useI18n();
 
   return (
     <div className="hero">
-      <h1>Breathe. Book. Flow.</h1>
-      <p>
-        Reserve your place in classes at your yoga studio — see what&apos;s on,
-        grab a spot, and keep track of your bookings.
-      </p>
+      <h1>{t("home.title")}</h1>
+      <p>{t("home.subtitle")}</p>
       {isAuthenticated ? (
         <Link className="btn" to="/classes">
-          Browse classes
+          {t("home.browse")}
         </Link>
       ) : (
         <Link className="btn" to="/login">
-          Log in
+          {t("nav.login")}
         </Link>
       )}
     </div>

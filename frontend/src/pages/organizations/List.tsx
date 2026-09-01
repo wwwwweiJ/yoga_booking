@@ -1,22 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { listOrganizations } from "../../api/organizations";
+import { useI18n } from "../../i18n";
 
 // A user belongs to one studio and can't create or edit it (studios are set up
 // by an operator), so this is a read-only view of "my studio".
 export function OrganizationsList() {
+  const { t } = useI18n();
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["organizations"],
     queryFn: () => listOrganizations(),
   });
 
   if (isPending) {
-    return <p>Loading…</p>;
+    return <p>{t("common.loading")}</p>;
   }
 
   if (isError) {
     return (
       <p role="alert">
-        {error instanceof Error ? error.message : "Failed to load your studio"}
+        {error instanceof Error ? error.message : t("studio.loadFailed")}
       </p>
     );
   }
@@ -26,19 +28,19 @@ export function OrganizationsList() {
   return (
     <div>
       <div className="page-header">
-        <h1>My studio</h1>
+        <h1>{t("studio.title")}</h1>
       </div>
       {studio ? (
         <div className="card">
           <dl>
-            <dt>Name</dt>
+            <dt>{t("studio.name")}</dt>
             <dd>{studio.name}</dd>
-            <dt>Timezone</dt>
+            <dt>{t("studio.timezone")}</dt>
             <dd>{studio.timezone}</dd>
           </dl>
         </div>
       ) : (
-        <div className="card empty">You are not attached to a studio.</div>
+        <div className="card empty">{t("studio.none")}</div>
       )}
     </div>
   );

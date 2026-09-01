@@ -1,0 +1,81 @@
+import type { TranslationKey } from "./en";
+
+// Must cover exactly the keys in `en` — `Record<TranslationKey, string>` makes
+// a missing or misspelled key a compile error.
+export const zhTW: Record<TranslationKey, string> = {
+  "nav.classes": "課程",
+  "nav.bookings": "我的預約",
+  "nav.studio": "我的工作室",
+  "nav.logout": "登出",
+  "nav.login": "登入",
+
+  "common.loading": "載入中…",
+  "common.total": "共 {count} 筆",
+  "common.loginLink": "登入",
+
+  "home.title": "呼吸。預約。流動。",
+  "home.subtitle":
+    "在你的瑜伽工作室預約課程 —— 看看有哪些課、搶個位子,並管理你的預約。",
+  "home.browse": "瀏覽課程",
+
+  "auth.email": "電子郵件",
+  "auth.password": "密碼",
+  "auth.name": "姓名",
+  "auth.login.title": "登入",
+  "auth.login.submit": "登入",
+  "auth.login.submitting": "登入中…",
+  "auth.login.failed": "登入失敗",
+  "auth.login.switch":
+    "還沒有帳號?註冊是各工作室獨立的 —— 請用你的工作室給你的註冊連結。",
+  "auth.register.join": "加入 {studio}",
+  "auth.register.submit": "建立帳號",
+  "auth.register.submitting": "建立中…",
+  "auth.register.failed": "註冊失敗",
+  "auth.register.invalidLink": "無效的工作室連結。",
+  "auth.register.notFound": "找不到這間工作室 —— 請確認你的工作室給你的註冊連結。",
+  "auth.register.haveAccount": "已經有帳號了?",
+
+  "classes.title": "課程",
+  "classes.new": "新增課程",
+  "classes.loadFailed": "載入課程失敗",
+  "classes.empty": "還沒有任何課程。",
+  "classes.col.title": "名稱",
+  "classes.col.instructor": "老師",
+  "classes.col.starts": "開始時間",
+  "classes.col.duration": "時長",
+  "classes.col.spots": "名額",
+  "classes.minutes": "{count} 分鐘",
+  "classes.badge.started": "已開始",
+  "classes.badge.full": "已額滿",
+  "classes.badge.left": "剩 {left} / {capacity}",
+  "classes.book": "預約",
+  "classes.booked": "預約成功!",
+  "classes.bookFailed": "無法預約",
+  "classes.delete": "刪除",
+  "classes.deleteConfirm": "確定刪除「{title}」?",
+
+  "classes.form.editTitle": "編輯課程",
+  "classes.form.newTitle": "新增課程",
+  "classes.form.startsAt": "開始時間",
+  "classes.form.duration": "時長(分鐘)",
+  "classes.form.capacity": "名額上限",
+  "classes.form.save": "儲存",
+  "classes.form.saving": "儲存中…",
+  "classes.form.saveFailed": "儲存失敗",
+
+  "bookings.title": "我的預約",
+  "bookings.loadFailed": "載入預約失敗",
+  "bookings.empty": "你還沒有任何預約。",
+  "bookings.browse": "瀏覽課程",
+  "bookings.col.class": "課程",
+  "bookings.col.instructor": "老師",
+  "bookings.col.starts": "開始時間",
+  "bookings.cancel": "取消",
+  "bookings.cancelConfirm": "確定取消「{title}」?",
+
+  "studio.title": "我的工作室",
+  "studio.name": "名稱",
+  "studio.timezone": "時區",
+  "studio.none": "你尚未加入任何工作室。",
+  "studio.loadFailed": "載入工作室失敗",
+};

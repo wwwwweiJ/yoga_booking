@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
 import { ApiClientError } from "../../api/client";
 import { createClass, getClass, updateClass } from "../../api/classes";
+import { useI18n } from "../../i18n";
 
 // The API speaks RFC 3339 (UTC); <input type="datetime-local"> speaks a naive
 // local "YYYY-MM-DDTHH:mm". Convert at the edges so the wire format stays the
@@ -23,6 +24,7 @@ export function ClassForm() {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useI18n();
 
   // The owning studio is implicit — always the logged-in user's — so it is not
   // part of the form.
@@ -66,7 +68,11 @@ export function ClassForm() {
       navigate("/classes");
     },
     onError: (err) => {
-      setError(err instanceof ApiClientError ? err.message : "Failed to save");
+      setError(
+        err instanceof ApiClientError
+          ? err.message
+          : t("classes.form.saveFailed"),
+      );
     },
   });
 
@@ -77,18 +83,20 @@ export function ClassForm() {
   }
 
   if (isEdit && existing.isPending) {
-    return <p>Loading…</p>;
+    return <p>{t("common.loading")}</p>;
   }
 
   return (
     <div>
       <div className="page-header">
-        <h1>{isEdit ? "Edit class" : "New class"}</h1>
+        <h1>
+          {isEdit ? t("classes.form.editTitle") : t("classes.form.newTitle")}
+        </h1>
       </div>
       <div className="card">
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="title">Title</label>
+          <label htmlFor="title">{t("classes.col.title")}</label>
           <input
             id="title"
             type="text"
@@ -99,7 +107,7 @@ export function ClassForm() {
           />
         </div>
         <div>
-          <label htmlFor="instructor">Instructor</label>
+          <label htmlFor="instructor">{t("classes.col.instructor")}</label>
           <input
             id="instructor"
             type="text"
@@ -110,7 +118,7 @@ export function ClassForm() {
           />
         </div>
         <div>
-          <label htmlFor="startsAt">Starts at</label>
+          <label htmlFor="startsAt">{t("classes.form.startsAt")}</label>
           <input
             id="startsAt"
             type="datetime-local"
@@ -120,7 +128,7 @@ export function ClassForm() {
           />
         </div>
         <div>
-          <label htmlFor="duration">Duration (minutes)</label>
+          <label htmlFor="duration">{t("classes.form.duration")}</label>
           <input
             id="duration"
             type="number"
@@ -131,7 +139,7 @@ export function ClassForm() {
           />
         </div>
         <div>
-          <label htmlFor="capacity">Capacity</label>
+          <label htmlFor="capacity">{t("classes.form.capacity")}</label>
           <input
             id="capacity"
             type="number"
@@ -142,7 +150,7 @@ export function ClassForm() {
           />
         </div>
         <button type="submit" disabled={save.isPending}>
-          {save.isPending ? "Saving…" : "Save"}
+          {save.isPending ? t("classes.form.saving") : t("classes.form.save")}
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
