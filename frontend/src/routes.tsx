@@ -8,6 +8,7 @@ import { OrganizationsList } from './pages/organizations/List'
 import { ClassesList } from './pages/classes/List'
 import { ClassForm } from './pages/classes/Form'
 import { BookingsList } from './pages/bookings/List'
+import { Admin } from './pages/admin/Admin'
 // scaffold:imports
 
 export const router = createBrowserRouter([
@@ -26,6 +27,7 @@ export const router = createBrowserRouter([
           { path: 'classes/new', element: <ClassForm /> },
           { path: 'classes/:id/edit', element: <ClassForm /> },
           { path: 'bookings', element: <BookingsList /> },
+          { path: 'admin', element: <Admin /> },
           // scaffold:routes
         ],
       },

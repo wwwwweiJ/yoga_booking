@@ -49,6 +49,17 @@ pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedIn
     logged
 }
 
+/// Register + log in an **admin** (operator) user. Their own studio is
+/// irrelevant to their cross-studio admin powers.
+pub async fn init_admin_login(request: &TestServer, ctx: &AppContext) -> LoggedInUser {
+    let mut logged = init_member_login(request, ctx).await;
+    set_role(ctx, &logged.user.email, "admin").await;
+    logged.user = users::Model::find_by_email(&ctx.db, &logged.user.email)
+        .await
+        .unwrap();
+    logged
+}
+
 /// Register + log in a plain **member** (student) bound to a freshly-seeded
 /// studio.
 pub async fn init_member_login(request: &TestServer, ctx: &AppContext) -> LoggedInUser {

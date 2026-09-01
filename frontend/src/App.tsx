@@ -1,11 +1,13 @@
 import { Link, Outlet, useNavigate } from 'react-router'
 import { clearToken, getToken } from './auth/token'
+import { useCurrentUser } from './auth/useCurrentUser'
 import { LOCALES, useI18n } from './i18n'
 
 export function App() {
   const navigate = useNavigate()
   const isAuthenticated = getToken() !== null
   const { t, locale, setLocale } = useI18n()
+  const { isAdmin } = useCurrentUser()
 
   function handleLogout() {
     clearToken()
@@ -30,6 +32,11 @@ export function App() {
               <Link to="/organizations" className="nav-link">
                 {t('nav.studio')}
               </Link>
+              {isAdmin && (
+                <Link to="/admin" className="nav-link">
+                  {t('nav.admin')}
+                </Link>
+              )}
               <button type="button" className="btn-ghost" onClick={handleLogout}>
                 {t('nav.logout')}
               </button>
