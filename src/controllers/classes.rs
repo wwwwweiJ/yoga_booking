@@ -1,4 +1,5 @@
 use axum::http::StatusCode;
+use loco_rs::controller::ErrorDetail;
 use loco_rs::prelude::*;
 
 use crate::{
@@ -15,6 +16,19 @@ async fn current_org_id(auth: &auth::JWT, ctx: &AppContext) -> Result<i64> {
     Ok(users::Model::find_by_pid(&ctx.db, &auth.claims.pid)
         .await?
         .organization_id)
+}
+
+/// Managing classes is a teacher (staff) action. Students get a 403. Returns
+/// the caller's studio id so writes stay scoped to it.
+async fn require_staff_org_id(auth: &auth::JWT, ctx: &AppContext) -> Result<i64> {
+    let user = users::Model::find_by_pid(&ctx.db, &auth.claims.pid).await?;
+    if !user.is_staff() {
+        return Err(Error::CustomError(
+            StatusCode::FORBIDDEN,
+            ErrorDetail::with_reason("only teachers can manage classes"),
+        ));
+    }
+    Ok(user.organization_id)
 }
 
 /// Load a class that belongs to `org_id`, or 404. A class in another studio is
@@ -97,7 +111,7 @@ async fn create(
     State(ctx): State<AppContext>,
     Json(params): Json<CreateClassParams>,
 ) -> Result<Response> {
-    let org_id = current_org_id(&auth, &ctx).await?;
+    let org_id = require_staff_org_id(&auth, &ctx).await?;
     let starts_at = parse_starts_at(&params.starts_at)?;
 
     // The studio is implicit — always the caller's — so it can't be spoofed.
@@ -125,7 +139,7 @@ async fn update(
     State(ctx): State<AppContext>,
     Json(params): Json<UpdateClassParams>,
 ) -> Result<Response> {
-    let org_id = current_org_id(&auth, &ctx).await?;
+    let org_id = require_staff_org_id(&auth, &ctx).await?;
     let starts_at = parse_starts_at(&params.starts_at)?;
     let mut item = load_item(&ctx, id, org_id).await?.into_active_model();
     item.title = ActiveValue::set(params.title);
@@ -145,7 +159,7 @@ async fn remove(
     Path(id): Path<i64>,
     State(ctx): State<AppContext>,
 ) -> Result<Response> {
-    let org_id = current_org_id(&auth, &ctx).await?;
+    let org_id = require_staff_org_id(&auth, &ctx).await?;
     let item = load_item(&ctx, id, org_id).await?;
     classes::Entity::delete_by_id(item.id).exec(&ctx.db).await?;
     format::render().status(StatusCode::NO_CONTENT).empty()

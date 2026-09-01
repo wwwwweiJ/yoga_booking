@@ -27,6 +27,9 @@ pub struct CurrentResponse {
     pub pid: String,
     pub name: String,
     pub email: String,
+    /// `member` | `staff` | `admin` — lets the frontend show teacher/admin
+    /// controls only to those allowed to use them.
+    pub role: String,
 }
 
 impl CurrentResponse {
@@ -36,6 +39,7 @@ impl CurrentResponse {
             pid: user.pid.to_string(),
             name: user.name.clone(),
             email: user.email.clone(),
+            role: user.role.clone(),
         }
     }
 }

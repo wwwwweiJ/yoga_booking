@@ -11,6 +11,27 @@ pub const MAGIC_LINK_LENGTH: i8 = 32;
 pub const MAGIC_LINK_EXPIRATION_MIN: i8 = 5;
 pub const RESET_TOKEN_EXPIRATION_MIN: i64 = 30;
 
+/// User tiers. `member` (student) is the default every registration gets;
+/// `staff` (teacher) manages a studio's classes and page; `admin` (operator)
+/// runs the cross-studio backoffice.
+pub const ROLE_MEMBER: &str = "member";
+pub const ROLE_STAFF: &str = "staff";
+pub const ROLE_ADMIN: &str = "admin";
+
+impl Model {
+    /// Teachers and admins may manage a studio's classes.
+    #[must_use]
+    pub fn is_staff(&self) -> bool {
+        self.role == ROLE_STAFF || self.role == ROLE_ADMIN
+    }
+
+    /// Only admins reach the operator backoffice.
+    #[must_use]
+    pub fn is_admin(&self) -> bool {
+        self.role == ROLE_ADMIN
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoginParams {
     pub email: String,

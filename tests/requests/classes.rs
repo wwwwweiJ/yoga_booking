@@ -69,6 +69,35 @@ async fn create_requires_auth() {
 
 #[tokio::test]
 #[serial]
+async fn member_cannot_create_class() {
+    request::<App, _, _>(|request, ctx| async move {
+        // A plain student, not a teacher.
+        let user = prepare_data::init_member_login(&request, &ctx).await;
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let response = request
+            .post("/api/classes")
+            .add_header(auth_key, auth_value)
+            .json(&serde_json::json!({
+                "title": "Vinyasa Flow",
+                "instructor": "Mei",
+                "starts_at": STARTS_AT,
+                "duration_minutes": 60,
+                "capacity": 20,
+            }))
+            .await;
+
+        assert_eq!(
+            response.status_code(),
+            403,
+            "students can't create classes — only teachers"
+        );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn can_create_in_my_org() {
     request::<App, _, _>(|request, ctx| async move {
         let user = prepare_data::init_user_login(&request, &ctx).await;

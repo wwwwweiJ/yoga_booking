@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { ApiClientError } from "../../api/client";
 import { createBooking } from "../../api/bookings";
 import { deleteClass, listClasses } from "../../api/classes";
+import { useCurrentUser } from "../../auth/useCurrentUser";
 import { useI18n } from "../../i18n";
 
 function hasStarted(iso: string): boolean {
@@ -12,6 +13,7 @@ function hasStarted(iso: string): boolean {
 export function ClassesList() {
   const queryClient = useQueryClient();
   const { t, locale } = useI18n();
+  const { isStaff } = useCurrentUser();
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["classes"],
@@ -53,9 +55,11 @@ export function ClassesList() {
     <div>
       <div className="page-header">
         <h1>{t("classes.title")}</h1>
-        <Link to="/classes/new" className="btn">
-          {t("classes.new")}
-        </Link>
+        {isStaff && (
+          <Link to="/classes/new" className="btn">
+            {t("classes.new")}
+          </Link>
+        )}
       </div>
 
       {data.items.length === 0 ? (
@@ -80,7 +84,13 @@ export function ClassesList() {
                 return (
                   <tr key={klass.id}>
                     <td>
-                      <Link to={`/classes/${klass.id}/edit`}>{klass.title}</Link>
+                      {isStaff ? (
+                        <Link to={`/classes/${klass.id}/edit`}>
+                          {klass.title}
+                        </Link>
+                      ) : (
+                        klass.title
+                      )}
                     </td>
                     <td>{klass.instructor}</td>
                     <td>{new Date(klass.starts_at).toLocaleString(locale)}</td>
@@ -113,22 +123,26 @@ export function ClassesList() {
                       >
                         {t("classes.book")}
                       </button>{" "}
-                      <button
-                        type="button"
-                        className="btn-danger"
-                        disabled={remove.isPending}
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              t("classes.deleteConfirm", { title: klass.title }),
-                            )
-                          ) {
-                            remove.mutate(klass.id);
-                          }
-                        }}
-                      >
-                        {t("classes.delete")}
-                      </button>
+                      {isStaff && (
+                        <button
+                          type="button"
+                          className="btn-danger"
+                          disabled={remove.isPending}
+                          onClick={() => {
+                            if (
+                              window.confirm(
+                                t("classes.deleteConfirm", {
+                                  title: klass.title,
+                                }),
+                              )
+                            ) {
+                              remove.mutate(klass.id);
+                            }
+                          }}
+                        >
+                          {t("classes.delete")}
+                        </button>
+                      )}
                     </td>
                   </tr>
                 );

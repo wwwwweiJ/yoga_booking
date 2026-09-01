@@ -1,6 +1,6 @@
 use axum::http::{HeaderName, HeaderValue};
 use loco_rs::{app::AppContext, TestServer};
-use sea_orm::{ActiveModelTrait, ActiveValue};
+use sea_orm::{ActiveModelTrait, ActiveValue, IntoActiveModel};
 use yoga_booking::{
     models::{_entities::organizations, users},
     views::auth::LoginResponse,
@@ -37,9 +37,21 @@ pub async fn seed_organization(
     .expect("seed organization")
 }
 
-/// Register + log in a user bound to a freshly-seeded studio, returning the
-/// token plus that studio's id and register token.
+/// Register + log in a **staff** (teacher) user bound to a freshly-seeded
+/// studio. Most tests exercise class management, which is staff-only, so this
+/// is the default. Use [`init_member_login`] for student-only scenarios.
 pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedInUser {
+    let mut logged = init_member_login(request, ctx).await;
+    set_role(ctx, &logged.user.email, "staff").await;
+    logged.user = users::Model::find_by_email(&ctx.db, &logged.user.email)
+        .await
+        .unwrap();
+    logged
+}
+
+/// Register + log in a plain **member** (student) bound to a freshly-seeded
+/// studio.
+pub async fn init_member_login(request: &TestServer, ctx: &AppContext) -> LoggedInUser {
     let org = seed_organization(ctx, "Test Studio", "Asia/Taipei").await;
     let login = register_and_login(request, USER_EMAIL, &org.public_id.to_string()).await;
     LoggedInUser {
@@ -50,6 +62,17 @@ pub async fn init_user_login(request: &TestServer, ctx: &AppContext) -> LoggedIn
         organization_id: org.id,
         organization_public_id: org.public_id.to_string(),
     }
+}
+
+/// Set a user's role directly (roles are assigned out-of-band — via the
+/// `user:create` task or the admin backoffice — never through registration).
+pub async fn set_role(ctx: &AppContext, email: &str, role: &str) {
+    let user = users::Model::find_by_email(&ctx.db, email)
+        .await
+        .expect("user exists");
+    let mut active = user.into_active_model();
+    active.role = ActiveValue::set(role.to_string());
+    active.update(&ctx.db).await.expect("role updated");
 }
 
 /// Register (into the studio identified by `organization_token`) + log in an

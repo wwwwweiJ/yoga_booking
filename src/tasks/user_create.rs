@@ -11,7 +11,7 @@ impl Task for UserCreate {
     fn task(&self) -> TaskInfo {
         TaskInfo {
             name: "user:create".to_string(),
-            detail: "Create a new user with email, name, password, and organization_id. Sends welcome email and sets up email verification.\nUsage:\ncargo run task user:create email:user@example.com name:\"John Doe\" password:\"securepassword\" organization_id:1".to_string(),
+            detail: "Create a new user with email, name, password, and organization_id (role optional: member|staff|admin, default member). Sends welcome email and sets up email verification.\nUsage:\ncargo run task user:create email:user@example.com name:\"John Doe\" password:\"securepassword\" organization_id:1 role:staff".to_string(),
         }
     }
     async fn run(&self, app_context: &AppContext, vars: &task::Vars) -> Result<()> {
@@ -29,6 +29,8 @@ impl Task for UserCreate {
             .map_err(|_| Error::string("organization_id is mandatory"))?
             .parse::<i64>()
             .map_err(|_| Error::string("organization_id must be an integer"))?;
+        // Optional; defaults to a plain member (student).
+        let role = vars.cli_arg("role").unwrap_or("member").to_owned();
 
         let register_params = RegisterParams {
             email: email.to_owned(),
@@ -58,6 +60,19 @@ impl Task for UserCreate {
                 );
                 return Err(Error::string(&format!("Failed to create user. err: {err}")));
             }
+        };
+
+        // Promote to the requested tier (create_with_password always makes a
+        // member; operators use this task to mint staff / admin accounts).
+        let user = if role == "member" {
+            user
+        } else {
+            let mut active = user.into_active_model();
+            active.role = Set(role.clone());
+            active
+                .update(&app_context.db)
+                .await
+                .map_err(|e| Error::string(&format!("Failed to set role. err: {e}")))?
         };
 
         // Set email verification sent (same as register controller)
@@ -96,6 +111,7 @@ impl Task for UserCreate {
         println!("✅ User created successfully!");
         println!("   Email: {}", user.email);
         println!("   Name: {}", user.name);
+        println!("   Role: {}", user.role);
         println!("   PID: {}", user.pid);
 
         Ok(())
