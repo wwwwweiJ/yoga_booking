@@ -73,6 +73,7 @@ export function ClassesList() {
                 <th>{t("classes.col.instructor")}</th>
                 <th>{t("classes.col.starts")}</th>
                 <th>{t("classes.col.duration")}</th>
+                <th>{t("classes.col.price")}</th>
                 <th>{t("classes.col.spots")}</th>
                 <th aria-label="actions" />
               </tr>
@@ -96,6 +97,9 @@ export function ClassesList() {
                     <td>{new Date(klass.starts_at).toLocaleString(locale)}</td>
                     <td>
                       {t("classes.minutes", { count: klass.duration_minutes })}
+                    </td>
+                    <td>
+                      {klass.price === 0 ? t("classes.free") : klass.price}
                     </td>
                     <td>
                       {started ? (

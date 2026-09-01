@@ -18,6 +18,8 @@ pub struct Validator {
     pub duration_minutes: i32,
     #[validate(range(min = 1, message = "Capacity must be at least 1."))]
     pub capacity: i32,
+    #[validate(range(min = 0, message = "Price cannot be negative."))]
+    pub price: i32,
 }
 
 impl Validatable for ActiveModel {
@@ -27,6 +29,11 @@ impl Validatable for ActiveModel {
             instructor: self.instructor.as_ref().to_owned(),
             duration_minutes: *self.duration_minutes.as_ref(),
             capacity: *self.capacity.as_ref(),
+            // `price` may be NotSet (the DB defaults it to 0); don't panic.
+            price: match &self.price {
+                ActiveValue::Set(v) | ActiveValue::Unchanged(v) => *v,
+                ActiveValue::NotSet => 0,
+            },
         })
     }
 }

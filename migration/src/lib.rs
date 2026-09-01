@@ -9,6 +9,7 @@ mod m20260828_140000_bookings;
 mod m20260828_150000_add_organization_to_users;
 mod m20260831_120000_add_public_id_to_organizations;
 mod m20260901_120000_add_role_to_users;
+mod m20260901_130000_add_payment;
 pub struct Migrator;
 
 #[async_trait::async_trait]
@@ -22,6 +23,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260828_150000_add_organization_to_users::Migration),
             Box::new(m20260831_120000_add_public_id_to_organizations::Migration),
             Box::new(m20260901_120000_add_role_to_users::Migration),
+            Box::new(m20260901_130000_add_payment::Migration),
             // inject-above (do not remove this comment)
         ]
     }

@@ -4,4 +4,4 @@
  * Body for a full replacement (PUT) of a class. The owning studio is fixed at
  * creation, so it is not part of the update.
  */
-export type UpdateClassParams = { title: string, instructor: string, starts_at: string, duration_minutes: number, capacity: number, };
+export type UpdateClassParams = { title: string, instructor: string, starts_at: string, duration_minutes: number, capacity: number, price: number, };

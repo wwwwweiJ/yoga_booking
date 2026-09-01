@@ -6,4 +6,8 @@ import type { Class } from "./Class";
  * embedded so "my bookings" renders without a second round-trip; `class_id`
  * is kept flat for convenience.
  */
-export type Booking = { id: number, class_id: number, created_at: string, class: Class, };
+export type Booking = { id: number, class_id: number, 
+/**
+ * `pending` until the (mock) payment succeeds, then `paid`.
+ */
+payment_status: string, created_at: string, class: Class, };

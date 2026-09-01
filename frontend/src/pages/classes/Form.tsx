@@ -33,6 +33,7 @@ export function ClassForm() {
   const [startsAt, setStartsAt] = useState("");
   const [durationMinutes, setDurationMinutes] = useState(60);
   const [capacity, setCapacity] = useState(20);
+  const [price, setPrice] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -49,6 +50,7 @@ export function ClassForm() {
       setStartsAt(toInputValue(existing.data.starts_at));
       setDurationMinutes(existing.data.duration_minutes);
       setCapacity(existing.data.capacity);
+      setPrice(existing.data.price);
     }
   }, [existing.data]);
 
@@ -61,6 +63,7 @@ export function ClassForm() {
         starts_at: startsAtIso,
         duration_minutes: durationMinutes,
         capacity,
+        price,
       };
       return isEdit ? updateClass(classId as number, body) : createClass(body);
     },
@@ -166,6 +169,21 @@ export function ClassForm() {
           />
           {fieldErrors.capacity && (
             <p className="field-error">{fieldErrors.capacity}</p>
+          )}
+        </div>
+        <div>
+          <label htmlFor="price">{t("classes.form.price")}</label>
+          <input
+            id="price"
+            type="number"
+            required
+            min={0}
+            className={fieldErrors.price ? "is-invalid" : undefined}
+            value={price}
+            onChange={(e) => setPrice(Number(e.target.value))}
+          />
+          {fieldErrors.price && (
+            <p className="field-error">{fieldErrors.price}</p>
           )}
         </div>
         <button type="submit" disabled={save.isPending}>

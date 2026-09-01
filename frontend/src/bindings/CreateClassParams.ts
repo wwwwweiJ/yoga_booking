@@ -5,4 +5,4 @@
  * authenticated user's — so it is not part of the request. `starts_at` is
  * parsed from RFC 3339 in the controller.
  */
-export type CreateClassParams = { title: string, instructor: string, starts_at: string, duration_minutes: number, capacity: number, };
+export type CreateClassParams = { title: string, instructor: string, starts_at: string, duration_minutes: number, capacity: number, price: number, };

@@ -22,6 +22,7 @@ async fn create_class(request: &TestServer, token: &str) -> Value {
             "starts_at": STARTS_AT,
             "duration_minutes": 60,
             "capacity": 20,
+            "price": 500,
         }))
         .await;
     assert_eq!(response.status_code(), 201, "class create should return 201");
@@ -115,6 +116,7 @@ async fn can_create_in_my_org() {
             Some(20),
             "a fresh class has all its seats free"
         );
+        assert_eq!(body["price"].as_i64(), Some(500), "price round-trips");
     })
     .await;
 }

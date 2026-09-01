@@ -16,6 +16,7 @@ pub struct Model {
     pub duration_minutes: i32,
     pub capacity: i32,
     pub organization_id: i64,
+    pub price: i32,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -19,6 +19,9 @@ pub struct Class {
     pub duration_minutes: i32,
     #[ts(type = "number")]
     pub capacity: i32,
+    /// Whole currency units; 0 = free.
+    #[ts(type = "number")]
+    pub price: i32,
     /// Remaining seats = `capacity - current bookings`, never negative.
     #[ts(type = "number")]
     pub spots_left: i32,
@@ -40,6 +43,7 @@ impl Class {
             starts_at: c.starts_at.to_rfc3339(),
             duration_minutes: c.duration_minutes,
             capacity: c.capacity,
+            price: c.price,
             spots_left,
             created_at: c.created_at.to_rfc3339(),
             updated_at: c.updated_at.to_rfc3339(),
@@ -60,6 +64,9 @@ pub struct CreateClassParams {
     pub duration_minutes: i32,
     #[ts(type = "number")]
     pub capacity: i32,
+    #[serde(default)]
+    #[ts(type = "number")]
+    pub price: i32,
 }
 
 /// Body for a full replacement (PUT) of a class. The owning studio is fixed at
@@ -74,4 +81,7 @@ pub struct UpdateClassParams {
     pub duration_minutes: i32,
     #[ts(type = "number")]
     pub capacity: i32,
+    #[serde(default)]
+    #[ts(type = "number")]
+    pub price: i32,
 }

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
-import { cancelBooking, listBookings } from "../../api/bookings";
+import { cancelBooking, listBookings, payBooking } from "../../api/bookings";
 import { useI18n } from "../../i18n";
 
 export function BookingsList() {
@@ -14,6 +14,11 @@ export function BookingsList() {
 
   const cancel = useMutation({
     mutationFn: (id: number) => cancelBooking(id),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["bookings"] }),
+  });
+
+  const pay = useMutation({
+    mutationFn: (id: number) => payBooking(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["bookings"] }),
   });
 
@@ -47,6 +52,7 @@ export function BookingsList() {
               <th>{t("bookings.col.class")}</th>
               <th>{t("bookings.col.instructor")}</th>
               <th>{t("bookings.col.starts")}</th>
+              <th>{t("bookings.col.payment")}</th>
               <th aria-label="actions" />
             </tr>
           </thead>
@@ -59,6 +65,30 @@ export function BookingsList() {
                   {new Date(booking.class.starts_at).toLocaleString(locale)}
                 </td>
                 <td>
+                  {booking.payment_status === "paid" ? (
+                    <span className="badge badge-open">
+                      {t("bookings.status.paid")}
+                    </span>
+                  ) : (
+                    <span className="badge badge-muted">
+                      {t("bookings.status.pending")}
+                    </span>
+                  )}
+                </td>
+                <td>
+                  {booking.payment_status === "pending" && (
+                    <>
+                      <button
+                        type="button"
+                        disabled={pay.isPending}
+                        onClick={() => pay.mutate(booking.id)}
+                      >
+                        {pay.isPending
+                          ? t("bookings.paying")
+                          : t("bookings.pay")}
+                      </button>{" "}
+                    </>
+                  )}
                   <button
                     type="button"
                     className="btn-danger"

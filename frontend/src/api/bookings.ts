@@ -15,6 +15,10 @@ export function createBooking(body: CreateBookingParams): Promise<Booking> {
   return post<Booking>("/api/bookings", body);
 }
 
+export function payBooking(id: number): Promise<Booking> {
+  return post<Booking>(`/api/bookings/${id}/pay`, {});
+}
+
 export function cancelBooking(id: number): Promise<void> {
   return del(`/api/bookings/${id}`);
 }

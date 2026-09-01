@@ -133,6 +133,38 @@ async fn create(
         .json(Booking::from_parts(booking, class, class_booked))
 }
 
+/// Mock payment: flip a pending booking to paid. No real gateway — this is the
+/// hook a real one (Stripe / a local gateway) would replace. Idempotent, and
+/// scoped to the caller's own booking.
+#[debug_handler]
+async fn pay(
+    auth: auth::JWT,
+    Path(id): Path<i64>,
+    State(ctx): State<AppContext>,
+) -> Result<Response> {
+    let user = current_user(&auth, &ctx).await?;
+
+    let booking = bookings::Entity::find_by_id(id).one(&ctx.db).await?;
+    let Some(booking) = booking.filter(|b| b.user_id == user.id) else {
+        return not_found();
+    };
+    let class = classes::Entity::find_by_id(booking.class_id)
+        .one(&ctx.db)
+        .await?
+        .ok_or_else(|| Error::NotFound)?;
+
+    let mut active = booking.into_active_model();
+    active.payment_status = ActiveValue::set("paid".to_string());
+    let booking = active.update(&ctx.db).await?;
+
+    let booked = bookings::Model::counts_by_class(&ctx.db, &[class.id])
+        .await?
+        .get(&class.id)
+        .copied()
+        .unwrap_or(0);
+    format::json(Booking::from_parts(booking, class, booked))
+}
+
 #[debug_handler]
 async fn remove(
     auth: auth::JWT,
@@ -159,5 +191,6 @@ pub fn routes() -> Routes {
         .prefix("/api/bookings")
         .add("/", get(list_mine))
         .add("/", post(create))
+        .add("/{id}/pay", post(pay))
         .add("/{id}", delete(remove))
 }

@@ -122,6 +122,7 @@ async fn create(
         starts_at: ActiveValue::set(starts_at),
         duration_minutes: ActiveValue::set(params.duration_minutes),
         capacity: ActiveValue::set(params.capacity),
+        price: ActiveValue::set(params.price),
         ..Default::default()
     };
     item.validate()?;
@@ -147,6 +148,7 @@ async fn update(
     item.starts_at = ActiveValue::set(starts_at);
     item.duration_minutes = ActiveValue::set(params.duration_minutes);
     item.capacity = ActiveValue::set(params.capacity);
+    item.price = ActiveValue::set(params.price);
     item.validate()?;
     let item = item.update(&ctx.db).await?;
     let booked = booked_count(&ctx, item.id).await?;

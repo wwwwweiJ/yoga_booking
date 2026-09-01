@@ -14,6 +14,8 @@ pub struct Booking {
     pub id: i64,
     #[ts(type = "number")]
     pub class_id: i64,
+    /// `pending` until the (mock) payment succeeds, then `paid`.
+    pub payment_status: String,
     pub created_at: String,
     pub class: Class,
 }
@@ -24,6 +26,7 @@ impl Booking {
         Self {
             id: booking.id,
             class_id: booking.class_id,
+            payment_status: booking.payment_status,
             created_at: booking.created_at.to_rfc3339(),
             class: Class::from_parts(class, class_booked),
         }

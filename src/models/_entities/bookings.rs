@@ -14,6 +14,7 @@ pub struct Model {
     pub user_id: i64,
     #[sea_orm(unique_key = "class_id")]
     pub class_id: i64,
+    pub payment_status: String,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

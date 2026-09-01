@@ -6,6 +6,10 @@
  */
 export type Class = { id: number, organization_id: number, title: string, instructor: string, starts_at: string, duration_minutes: number, capacity: number, 
 /**
+ * Whole currency units; 0 = free.
+ */
+price: number, 
+/**
  * Remaining seats = `capacity - current bookings`, never negative.
  */
 spots_left: number, created_at: string, updated_at: string, };

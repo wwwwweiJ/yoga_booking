@@ -67,6 +67,58 @@ async fn can_book_a_class() {
             Some(19),
             "booking takes one of the 20 seats"
         );
+        assert_eq!(
+            body["payment_status"], "pending",
+            "a fresh booking is unpaid until the mock payment"
+        );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn can_pay_for_a_booking() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_user_login(&request, &ctx).await;
+        let class_id = seed_class(&request, &user.token, 20).await;
+        let created: Value = book(&request, &user.token, class_id).await.json();
+        let booking_id = created["id"].as_i64().unwrap();
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let response = request
+            .post(&format!("/api/bookings/{booking_id}/pay"))
+            .add_header(auth_key, auth_value)
+            .await;
+
+        assert_eq!(response.status_code(), 200);
+        let body: Value = response.json();
+        assert_eq!(body["payment_status"], "paid", "mock payment marks it paid");
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn cannot_pay_for_someone_elses_booking() {
+    request::<App, _, _>(|request, ctx| async move {
+        let owner = prepare_data::init_user_login(&request, &ctx).await;
+        let class_id = seed_class(&request, &owner.token, 20).await;
+        let created: Value = book(&request, &owner.token, class_id).await.json();
+        let booking_id = created["id"].as_i64().unwrap();
+
+        let other = prepare_data::register_and_login(
+            &request,
+            "second@loco.com",
+            &owner.organization_public_id,
+        )
+        .await;
+        let (auth_key, auth_value) = prepare_data::auth_header(&other.token);
+        let response = request
+            .post(&format!("/api/bookings/{booking_id}/pay"))
+            .add_header(auth_key, auth_value)
+            .await;
+
+        assert_eq!(response.status_code(), 404, "you can't pay another's booking");
     })
     .await;
 }
