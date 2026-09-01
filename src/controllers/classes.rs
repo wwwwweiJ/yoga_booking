@@ -1,6 +1,8 @@
+use axum::body::{Body, Bytes};
 use axum::http::StatusCode;
 use loco_rs::controller::ErrorDetail;
 use loco_rs::prelude::*;
+use std::path::Path as StdPath;
 
 use crate::{
     dtos::{
@@ -167,6 +169,89 @@ async fn remove(
     format::render().status(StatusCode::NO_CONTENT).empty()
 }
 
+fn content_type_for(key: &str) -> &'static str {
+    match key.rsplit('.').next().unwrap_or("").to_ascii_lowercase().as_str() {
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        _ => "application/octet-stream",
+    }
+}
+
+/// Upload (or replace) the instructor photo for a class. Teacher-only, scoped
+/// to the caller's studio. The bytes go to the storage backend; the class keeps
+/// only the key.
+#[debug_handler]
+async fn upload_photo(
+    auth: auth::JWT,
+    Path(id): Path<i64>,
+    State(ctx): State<AppContext>,
+    mut multipart: Multipart,
+) -> Result<Response> {
+    let org_id = require_staff_org_id(&auth, &ctx).await?;
+    let item = load_item(&ctx, id, org_id).await?;
+
+    let mut uploaded: Option<(Bytes, String)> = None;
+    while let Some(field) = multipart
+        .next_field()
+        .await
+        .map_err(|e| Error::BadRequest(e.to_string()))?
+    {
+        if field.file_name().is_some() {
+            let filename = field.file_name().unwrap_or("photo").to_string();
+            let data = field
+                .bytes()
+                .await
+                .map_err(|e| Error::BadRequest(e.to_string()))?;
+            uploaded = Some((data, filename));
+            break;
+        }
+    }
+    let Some((data, filename)) = uploaded else {
+        return bad_request("no file uploaded");
+    };
+
+    let ext = filename
+        .rsplit('.')
+        .next()
+        .filter(|e| !e.is_empty() && e.len() <= 5)
+        .unwrap_or("bin");
+    let key = format!("class-photos/{id}-{}.{ext}", uuid::Uuid::new_v4());
+    ctx.storage
+        .upload(StdPath::new(&key), &data)
+        .await
+        .map_err(|e| Error::string(&e.to_string()))?;
+
+    let mut item = item.into_active_model();
+    item.instructor_photo = ActiveValue::set(Some(key));
+    let item = item.update(&ctx.db).await?;
+    let booked = booked_count(&ctx, item.id).await?;
+    format::json(Class::from_parts(item, booked))
+}
+
+/// Serve a class's instructor photo. Public (no auth) so an `<img>` tag can
+/// load it — photos are meant to be seen.
+#[debug_handler]
+async fn serve_photo(Path(id): Path<i64>, State(ctx): State<AppContext>) -> Result<Response> {
+    let class = classes::Entity::find_by_id(id)
+        .one(&ctx.db)
+        .await?
+        .ok_or_else(|| Error::NotFound)?;
+    let Some(key) = class.instructor_photo else {
+        return not_found();
+    };
+    let data: Vec<u8> = ctx
+        .storage
+        .download::<Vec<u8>>(StdPath::new(&key))
+        .await
+        .map_err(|_| Error::NotFound)?;
+    Ok(format::render()
+        .header("content-type", content_type_for(&key))
+        .response()
+        .body(Body::from(data))?)
+}
+
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("/api/classes")
@@ -175,4 +260,6 @@ pub fn routes() -> Routes {
         .add("/{id}", get(get_one))
         .add("/{id}", put(update))
         .add("/{id}", delete(remove))
+        .add("/{id}/photo", post(upload_photo))
+        .add("/{id}/photo", get(serve_photo))
 }

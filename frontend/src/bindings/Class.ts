@@ -12,4 +12,8 @@ price: number,
 /**
  * Remaining seats = `capacity - current bookings`, never negative.
  */
-spots_left: number, created_at: string, updated_at: string, };
+spots_left: number, 
+/**
+ * URL of the instructor photo, or null if none was uploaded.
+ */
+photo_url: string | null, created_at: string, updated_at: string, };

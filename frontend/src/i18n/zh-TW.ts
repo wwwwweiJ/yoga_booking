@@ -78,6 +78,9 @@ export const zhTW: Record<TranslationKey, string> = {
   "classes.form.save": "儲存",
   "classes.form.saving": "儲存中…",
   "classes.form.saveFailed": "儲存失敗",
+  "classes.form.photo": "老師照片",
+  "classes.form.uploading": "上傳中…",
+  "classes.form.uploadFailed": "上傳失敗",
 
   "bookings.title": "我的預約",
   "bookings.loadFailed": "載入預約失敗",

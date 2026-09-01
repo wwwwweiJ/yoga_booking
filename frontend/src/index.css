@@ -304,6 +304,27 @@ select.is-invalid:focus {
   font-size: 0.82rem;
 }
 
+/* Instructor photos */
+.instructor-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.instructor-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+.instructor-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: var(--radius);
+  object-fit: cover;
+  border: 1px solid var(--border);
+}
+
 /* ------------------------------ Feedback --------------------------------- */
 
 [role="alert"] {

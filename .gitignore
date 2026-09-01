@@ -17,3 +17,6 @@ target/
 
 *.sqlite
 *.sqlite-*
+
+# Uploaded files (instructor photos, etc.) — local storage backend
+uploads/

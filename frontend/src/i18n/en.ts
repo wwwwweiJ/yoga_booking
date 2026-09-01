@@ -78,6 +78,9 @@ export const en = {
   "classes.form.save": "Save",
   "classes.form.saving": "Saving…",
   "classes.form.saveFailed": "Failed to save",
+  "classes.form.photo": "Instructor photo",
+  "classes.form.uploading": "Uploading…",
+  "classes.form.uploadFailed": "Upload failed",
 
   "bookings.title": "My bookings",
   "bookings.loadFailed": "Failed to load bookings",

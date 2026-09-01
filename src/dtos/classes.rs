@@ -25,6 +25,8 @@ pub struct Class {
     /// Remaining seats = `capacity - current bookings`, never negative.
     #[ts(type = "number")]
     pub spots_left: i32,
+    /// URL of the instructor photo, or null if none was uploaded.
+    pub photo_url: Option<String>,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -35,6 +37,10 @@ impl Class {
     #[must_use]
     pub fn from_parts(c: classes::Model, booked: i64) -> Self {
         let spots_left = i32::try_from((i64::from(c.capacity) - booked).max(0)).unwrap_or(0);
+        let photo_url = c
+            .instructor_photo
+            .as_ref()
+            .map(|_| format!("/api/classes/{}/photo", c.id));
         Self {
             id: c.id,
             organization_id: c.organization_id,
@@ -45,6 +51,7 @@ impl Class {
             capacity: c.capacity,
             price: c.price,
             spots_left,
+            photo_url,
             created_at: c.created_at.to_rfc3339(),
             updated_at: c.updated_at.to_rfc3339(),
         }

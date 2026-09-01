@@ -93,7 +93,18 @@ export function ClassesList() {
                         klass.title
                       )}
                     </td>
-                    <td>{klass.instructor}</td>
+                    <td>
+                      <span className="instructor-cell">
+                        {klass.photo_url && (
+                          <img
+                            src={klass.photo_url}
+                            alt=""
+                            className="instructor-thumb"
+                          />
+                        )}
+                        {klass.instructor}
+                      </span>
+                    </td>
                     <td>{new Date(klass.starts_at).toLocaleString(locale)}</td>
                     <td>
                       {t("classes.minutes", { count: klass.duration_minutes })}

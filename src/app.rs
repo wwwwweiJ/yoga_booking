@@ -7,6 +7,7 @@ use loco_rs::{
     controller::AppRoutes,
     db::{self, truncate_table},
     environment::Environment,
+    storage::{self, Storage},
     task::Tasks,
     Result,
 };
@@ -48,6 +49,17 @@ impl Hooks for App {
 
     async fn initializers(_ctx: &AppContext) -> Result<Vec<Box<dyn Initializer>>> {
         Ok(vec![])
+    }
+
+    /// Uploaded files (e.g. instructor photos) go to local disk under
+    /// `uploads/`. Swap this driver for S3/GCS later without touching callers.
+    async fn after_context(ctx: AppContext) -> Result<AppContext> {
+        let store = storage::drivers::local::new_with_prefix("uploads")
+            .map_err(|e| loco_rs::Error::string(&e.to_string()))?;
+        Ok(ctx
+            .into_builder()
+            .storage(Storage::single(store).into())
+            .build())
     }
 
     fn routes(_ctx: &AppContext) -> AppRoutes {

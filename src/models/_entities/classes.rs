@@ -17,6 +17,7 @@ pub struct Model {
     pub capacity: i32,
     pub organization_id: i64,
     pub price: i32,
+    pub instructor_photo: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

@@ -1,3 +1,4 @@
+use axum_test::multipart::{MultipartForm, Part};
 use loco_rs::testing::prelude::*;
 use loco_rs::TestServer;
 use sea_orm::{ActiveModelTrait, ActiveValue};
@@ -117,6 +118,7 @@ async fn can_create_in_my_org() {
             "a fresh class has all its seats free"
         );
         assert_eq!(body["price"].as_i64(), Some(500), "price round-trips");
+        assert!(body["photo_url"].is_null(), "a fresh class has no photo");
     })
     .await;
 }
@@ -215,6 +217,69 @@ async fn getting_another_orgs_class_is_404() {
             404,
             "a class in another studio is not found for this user"
         );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn staff_can_upload_and_serve_instructor_photo() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_user_login(&request, &ctx).await;
+        let created = create_class(&request, &user.token).await;
+        let id = created["id"].as_i64().unwrap();
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let form = MultipartForm::new().add_part(
+            "photo",
+            Part::bytes(b"\x89PNG\r\n\x1a\n fake-image-bytes".to_vec())
+                .file_name("mei.png")
+                .mime_type("image/png"),
+        );
+        let response = request
+            .post(&format!("/api/classes/{id}/photo"))
+            .add_header(auth_key, auth_value)
+            .multipart(form)
+            .await;
+
+        assert_eq!(response.status_code(), 200);
+        let body: Value = response.json();
+        assert_eq!(body["photo_url"], format!("/api/classes/{id}/photo"));
+
+        // The photo serves publicly (no auth header) so an <img> can load it.
+        let img = request.get(&format!("/api/classes/{id}/photo")).await;
+        assert_eq!(img.status_code(), 200);
+        assert!(!img.as_bytes().is_empty(), "the stored bytes come back");
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn member_cannot_upload_photo() {
+    request::<App, _, _>(|request, ctx| async move {
+        // A student can't upload — need a class from a teacher first.
+        let teacher = prepare_data::init_user_login(&request, &ctx).await;
+        let created = create_class(&request, &teacher.token).await;
+        let id = created["id"].as_i64().unwrap();
+
+        let student =
+            prepare_data::register_and_login(&request, "student@loco.com", &teacher.organization_public_id)
+                .await;
+        let (auth_key, auth_value) = prepare_data::auth_header(&student.token);
+        let form = MultipartForm::new().add_part(
+            "photo",
+            Part::bytes(b"x".to_vec())
+                .file_name("x.png")
+                .mime_type("image/png"),
+        );
+        let response = request
+            .post(&format!("/api/classes/{id}/photo"))
+            .add_header(auth_key, auth_value)
+            .multipart(form)
+            .await;
+
+        assert_eq!(response.status_code(), 403);
     })
     .await;
 }

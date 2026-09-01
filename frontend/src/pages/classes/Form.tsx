@@ -3,7 +3,12 @@ import type { FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
 import { ApiClientError } from "../../api/client";
-import { createClass, getClass, updateClass } from "../../api/classes";
+import {
+  createClass,
+  getClass,
+  updateClass,
+  uploadClassPhoto,
+} from "../../api/classes";
 import { useI18n } from "../../i18n";
 
 // The API speaks RFC 3339 (UTC); <input type="datetime-local"> speaks a naive
@@ -79,6 +84,15 @@ export function ClassForm() {
         setError(t("classes.form.saveFailed"));
       }
     },
+  });
+
+  const uploadPhoto = useMutation({
+    mutationFn: (file: File) => uploadClassPhoto(classId as number, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classes"] });
+      existing.refetch();
+    },
+    onError: () => setError(t("classes.form.uploadFailed")),
   });
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -191,6 +205,36 @@ export function ClassForm() {
         </button>
       </form>
       {error && <p role="alert">{error}</p>}
+
+      {isEdit && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <label htmlFor="photo">{t("classes.form.photo")}</label>
+          {existing.data?.photo_url && (
+            <div style={{ margin: "0.5rem 0" }}>
+              <img
+                src={existing.data.photo_url}
+                alt=""
+                className="instructor-photo"
+              />
+            </div>
+          )}
+          <input
+            id="photo"
+            type="file"
+            accept="image/*"
+            disabled={uploadPhoto.isPending}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                uploadPhoto.mutate(file);
+              }
+            }}
+          />
+          {uploadPhoto.isPending && (
+            <p className="muted">{t("classes.form.uploading")}</p>
+          )}
+        </div>
+      )}
       </div>
     </div>
   );
