@@ -6,7 +6,7 @@ use yoga_booking::app::App;
 
 use super::prepare_data;
 
-const STARTS_AT: &str = "2026-09-01T10:00:00Z";
+const STARTS_AT: &str = "2030-01-01T10:00:00Z";
 
 /// Create a class in the caller's studio (implicit org) with the given
 /// capacity, returning its id.

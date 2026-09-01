@@ -3,7 +3,13 @@
 //! studio's public name for its per-studio register page.
 use loco_rs::prelude::*;
 
-use crate::{dtos::organizations::PublicOrganization, models::organizations};
+use crate::{
+    dtos::{
+        organizations::PublicOrganization,
+        studio::{blocks_from_value, StudioPage},
+    },
+    models::organizations,
+};
 
 /// Look up a studio by its public register token (`/register/<token>`) to show
 /// its name. The token is a random UUID, so a visitor can only reach a studio
@@ -22,8 +28,24 @@ async fn get_organization(
     format::json(PublicOrganization::from(org))
 }
 
+/// The studio's public page (name + blocks) for its `/studio/<token>` page.
+#[debug_handler]
+async fn get_page(Path(token): Path<String>, State(ctx): State<AppContext>) -> Result<Response> {
+    let Ok(public_id) = token.parse::<Uuid>() else {
+        return not_found();
+    };
+    let org = organizations::Model::find_by_public_id(&ctx.db, &public_id)
+        .await
+        .map_err(|_| Error::NotFound)?;
+    format::json(StudioPage {
+        name: org.name.clone(),
+        blocks: blocks_from_value(org.page),
+    })
+}
+
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("/api/public")
         .add("/organizations/{token}", get(get_organization))
+        .add("/organizations/{token}/page", get(get_page))
 }

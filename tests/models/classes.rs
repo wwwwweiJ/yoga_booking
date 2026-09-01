@@ -31,7 +31,7 @@ async fn seed_org(db: &sea_orm::DatabaseConnection) -> i64 {
 }
 
 fn starts_at() -> sea_orm::prelude::DateTimeWithTimeZone {
-    chrono::DateTime::parse_from_rfc3339("2026-09-01T10:00:00Z").expect("valid datetime")
+    chrono::DateTime::parse_from_rfc3339("2030-01-01T10:00:00Z").expect("valid datetime")
 }
 
 #[tokio::test]

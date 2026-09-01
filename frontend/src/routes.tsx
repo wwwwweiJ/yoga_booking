@@ -9,6 +9,8 @@ import { ClassesList } from './pages/classes/List'
 import { ClassForm } from './pages/classes/Form'
 import { BookingsList } from './pages/bookings/List'
 import { Admin } from './pages/admin/Admin'
+import { StudioEditor } from './pages/studio/StudioEditor'
+import { StudioPublicPage } from './pages/studio/StudioPublicPage'
 // scaffold:imports
 
 export const router = createBrowserRouter([
@@ -19,6 +21,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
       { path: 'register/:token', element: <Register /> },
+      { path: 'studio/:token', element: <StudioPublicPage /> },
       {
         element: <RequireAuth />,
         children: [
@@ -28,6 +31,7 @@ export const router = createBrowserRouter([
           { path: 'classes/:id/edit', element: <ClassForm /> },
           { path: 'bookings', element: <BookingsList /> },
           { path: 'admin', element: <Admin /> },
+          { path: 'studio/edit', element: <StudioEditor /> },
           // scaffold:routes
         ],
       },

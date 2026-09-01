@@ -273,7 +273,8 @@ label {
   margin-bottom: 0.35rem;
 }
 input,
-select {
+select,
+textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
   font: inherit;
@@ -284,8 +285,12 @@ select {
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+textarea {
+  resize: vertical;
+}
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--primary);
   box-shadow: var(--ring);
 }
@@ -322,6 +327,21 @@ select.is-invalid:focus {
   height: 120px;
   border-radius: var(--radius);
   object-fit: cover;
+  border: 1px solid var(--border);
+}
+
+/* Studio public page gallery */
+.studio-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.studio-gallery img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
 }
 

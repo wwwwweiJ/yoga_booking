@@ -8,7 +8,7 @@ use yoga_booking::{app::App, models::classes};
 
 use super::prepare_data;
 
-const STARTS_AT: &str = "2026-09-01T10:00:00Z";
+const STARTS_AT: &str = "2030-01-01T10:00:00Z";
 
 /// Create a class through the API. The studio is implicit (the caller's), so
 /// the body carries no `organization_id`.

@@ -5,4 +5,9 @@
  * RFC 3339 strings so the JSON contract stays obvious and the frontend gets a
  * plain `string` rather than a chrono-specific type.
  */
-export type Organization = { id: number, name: string, timezone: string, created_at: string, updated_at: string, };
+export type Organization = { id: number, name: string, timezone: string, 
+/**
+ * The studio's public token — its `/studio/<token>` page and
+ * `/register/<token>` link. A user only ever sees their own studio here.
+ */
+public_id: string, created_at: string, updated_at: string, };

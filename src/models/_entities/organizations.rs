@@ -14,6 +14,8 @@ pub struct Model {
     pub timezone: String,
     #[sea_orm(unique)]
     pub public_id: Uuid,
+    #[sea_orm(column_type = "JsonBinary", nullable)]
+    pub page: Option<Json>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

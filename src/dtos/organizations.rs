@@ -13,6 +13,9 @@ pub struct Organization {
     pub id: i64,
     pub name: String,
     pub timezone: String,
+    /// The studio's public token — its `/studio/<token>` page and
+    /// `/register/<token>` link. A user only ever sees their own studio here.
+    pub public_id: String,
     pub created_at: String,
     pub updated_at: String,
 }
@@ -23,6 +26,7 @@ impl From<organizations::Model> for Organization {
             id: o.id,
             name: o.name,
             timezone: o.timezone,
+            public_id: o.public_id.to_string(),
             created_at: o.created_at.to_rfc3339(),
             updated_at: o.updated_at.to_rfc3339(),
         }
