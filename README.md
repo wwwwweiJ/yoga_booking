@@ -1,66 +1,89 @@
 # Yoga Booking
 
-A small full-stack yoga class booking app built on [Loco](https://loco.rs)
-(Rust) with a React frontend. Studios publish classes; members book a spot.
+A full-stack, multi-tenant yoga studio booking app built on
+[Loco](https://loco.rs) (Rust) with a React frontend. Studios publish classes,
+customize their own public page, and take (mock) payments; members book a spot.
 
 ## Stack
 
-- **Backend:** Loco 1.1 (Axum + Sea-ORM), PostgreSQL, JWT auth.
-- **Frontend:** React 19 + Vite + TanStack Query + React Router, talking to the
-  API through a typed client. The request/response types in
-  `frontend/src/bindings/` are generated from the Rust DTOs by
+- **Backend:** Loco 1.1 (Axum + Sea-ORM), PostgreSQL, JWT auth, local-disk file
+  storage for uploads.
+- **Frontend:** React 19 + Vite + TanStack Query + React Router, a plain-CSS
+  design system, and dependency-free i18n (English + 繁體中文). Request/response
+  types in `frontend/src/bindings/` are generated from the Rust DTOs by
   [ts-rs](https://github.com/Aleph-Alpha/ts-rs) on `cargo test`, so the wire
   contract can't silently drift.
+
+## Roles
+
+Three tiers (`users.role`):
+
+- **member** (student) — the default for everyone who registers. Browses and
+  books classes, pays for and cancels their own bookings.
+- **staff** (teacher) — manages their studio's classes (create/edit/delete),
+  uploads instructor photos, and edits the studio's public page.
+- **admin** (operator) — the cross-studio backoffice (`/admin`): create studios
+  and mint teacher accounts.
+
+Registration always creates a member; staff/admin are minted out-of-band (the
+admin backoffice or the `user:create` task).
 
 ## Domain
 
 ```
-organization (a studio)  ── has many ──▶ users (members)
-  └── class (a scheduled, bookable session; has a capacity)
-        └── booking (a member's seat in a class)
+organization (a studio) ── has many ──▶ users (member / staff / admin)
+  ├── page   (customizable blocks: hero / about / gallery)
+  └── class  (a scheduled, priced, bookable session; optional instructor photo)
+        └── booking (a member's seat; payment_status pending → paid)
 ```
 
-- **Organizations** — `name`, `timezone` (IANA). Created out-of-band by an
-  operator (the `organization:create` task or a seed), not through the API.
+- **Organizations** — `name`, `timezone` (IANA), a non-guessable `public_id`
+  token, and a JSON `page`. Created by an operator, never through the public API.
 - **Users** — each belongs to exactly **one** studio (`organization_id`, set at
-  registration) and cannot cross to another; using a different studio means a
-  new account.
+  registration) and cannot cross to another; a different studio means a new
+  account.
 - **Classes** — belong to a studio; `title`, `instructor`, `starts_at`,
-  `duration_minutes`, `capacity`. The API also returns `spots_left`
-  (`capacity` minus current bookings). Deleting a studio cascades to its classes.
-- **Bookings** — a `(user, class)` pair. A user can't book the same class
-  twice (enforced by a unique index), can't book one that's already at capacity,
-  and can't book one that has already started. You only see and cancel your own
-  bookings.
+  `duration_minutes`, `capacity`, `price` (0 = free), optional instructor photo.
+  The API also returns `spots_left` and a `photo_url`.
+- **Bookings** — a `(user, class)` pair. A user can't book the same class twice
+  (unique index), can't book one at capacity, and can't book one that has
+  already started. A booking starts `pending` and a mock payment flips it to
+  `paid`. You only see, pay for, and cancel your own bookings.
+- **Studio page** — an ordered list of blocks (`hero` / `about` / `gallery`) a
+  teacher arranges; rendered publicly at `/studio/<token>`.
 
-**Tenancy:** every request is scoped to the caller's studio. You only ever see
-and manage your own studio's classes, can only book classes there, and the
-organizations endpoint returns just your studio — another studio's data is
-indistinguishable from "not found" (404).
+**Tenancy:** every request is scoped to the caller's studio. You only see and
+manage your own studio's classes, book only there, and cross-studio data is
+indistinguishable from "not found" (404). Class management is staff-only (403
+for students).
 
 ## API
 
-All endpoints require a JWT (`Authorization: Bearer <token>`) except the
-`/api/auth/*` flow.
-
-All paths below are scoped to the caller's studio, except the one public
-endpoint used by the signed-out register page.
+Everything requires a JWT (`Authorization: Bearer <token>`) except the
+`/api/auth/*` flow and the `/api/public/*` endpoints.
 
 | Method | Path | Notes |
 | --- | --- | --- |
-| `GET` | `/api/public/organizations/{token}` | **public** — a studio's `{name}` by its register token |
-| `GET` | `/api/organizations` | your studio (a one-item page) |
-| `GET` | `/api/organizations/{id}` | your studio, else 404 |
-| `GET/POST` | `/api/classes` | list your studio's / create (studio implicit) |
-| `GET/PUT/DELETE` | `/api/classes/{id}` | fetch / replace / delete (your studio only) |
+| `POST` | `/api/auth/register` | join a studio (`{ …, organization_token }`); dup email → 409 |
+| `POST` | `/api/auth/login` | returns a JWT |
+| `GET` | `/api/auth/current` | the caller (incl. `role`) |
+| `GET` | `/api/public/organizations/{token}` | **public** — a studio's `{ name }` |
+| `GET` | `/api/public/organizations/{token}/page` | **public** — a studio's page (name + blocks) |
+| `GET` | `/api/organizations` · `/api/organizations/{id}` | your studio only |
+| `GET/POST` | `/api/classes` | list your studio's / create (staff) |
+| `GET/PUT/DELETE` | `/api/classes/{id}` | fetch / replace / delete (staff, your studio) |
+| `POST` | `/api/classes/{id}/photo` | upload instructor photo (staff, multipart) |
+| `GET` | `/api/classes/{id}/photo` | **public** — the image bytes |
 | `GET/POST` | `/api/bookings` | my bookings / book a class (`{ class_id }`) |
+| `POST` | `/api/bookings/{id}/pay` | mock payment → `paid` |
 | `DELETE` | `/api/bookings/{id}` | cancel my booking |
+| `GET/PUT` | `/api/studio/page` | my studio's page (staff) |
+| `GET/POST` | `/api/admin/organizations` | admin — list / create studios |
+| `POST` | `/api/admin/staff` | admin — create a teacher for a studio |
 
-Registration takes an `organization_id` (the studio to join, which must exist).
-
-Status codes: `201` on create, `204` on delete, `400` on invalid input or a bad
-reference, `404` when absent or in another studio, `409` when booking a class
-twice.
+Status codes: `201` create, `204` delete, `400` invalid input / bad reference,
+`403` wrong role, `404` absent or another studio's, `409` conflict (dup email,
+double booking).
 
 ## Getting started
 
@@ -75,36 +98,28 @@ running):
 Or run the pieces by hand:
 
 ```sh
-docker compose up -d          # PostgreSQL on :5432
-cargo loco db migrate         # apply migrations (also runs on boot)
-cargo loco start              # API on :5150
-cd frontend && corepack pnpm dev   # frontend on :5173
+docker compose up -d                 # PostgreSQL on :5432
+cargo loco start                     # API on :5150 (migrates on boot)
+cd frontend && corepack pnpm dev     # frontend on :5173 (proxies /api)
 ```
 
-Studios are operator-created; make one and note its register link:
+### Bootstrap an operator
+
+Studios and staff are operator-created. Make a studio and an admin to run the
+backoffice:
 
 ```sh
 cargo loco task organization:create name:"Sunrise Yoga" timezone:"Asia/Taipei"
+# → prints the studio id and its /register/<token> link
+cargo loco task user:create \
+  email:you@dev.com name:"Dev" password:secret12 organization_id:1 role:admin
 ```
 
-Each studio has its own register page — `/register/<token>`, where the token is
-the studio's non-guessable `public_id` (printed by `organization:create`).
-Registration (`POST /api/auth/register`) takes that `organization_token`, never
-a numeric id, so a member can only join a studio whose link they were given —
-editing the URL to another number just 404s. There is no global directory of
-studios. Operators can also create members directly with
-`cargo loco task user:create ... organization_id:<id>`.
-
-Frontend (separate terminal):
-
-```sh
-cd frontend
-corepack pnpm install
-corepack pnpm dev             # :5173, proxies /api to :5150
-```
-
-Register + verify + log in through the UI, then use the nav to manage
-Organizations, Classes, and My Bookings.
+Log in as that admin → the **Admin** nav link opens `/admin`, where you create
+studios and add teachers (each studio shows its `/register/<token>` link).
+Teachers open classes, set prices, upload photos, and arrange their studio page
+(`/studio/edit`); students register via a studio's `/register/<token>` link,
+book classes, and pay. A studio's public page lives at `/studio/<token>`.
 
 ## Testing
 
@@ -115,6 +130,6 @@ createdb -h localhost -U loco yoga_booking_test   # password: loco
 cargo test
 ```
 
-Model logic lives under `src/models/`, HTTP handlers under
-`src/controllers/`, the typed JSON DTOs under `src/dtos/`, and tests under
-`tests/`. See `AGENTS.md` for the Loco conventions this project follows.
+Model logic lives under `src/models/`, HTTP handlers under `src/controllers/`,
+typed JSON DTOs under `src/dtos/`, and tests under `tests/`. See `AGENTS.md` for
+the Loco conventions this project follows.
