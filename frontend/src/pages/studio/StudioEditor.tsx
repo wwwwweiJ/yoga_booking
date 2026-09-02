@@ -2,7 +2,11 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Block } from "../../bindings/Block";
 import { ApiClientError } from "../../api/client";
-import { getMyStudioPage, updateStudioPage } from "../../api/studio";
+import {
+  getMyStudioPage,
+  updateStudioPage,
+  uploadStudioImage,
+} from "../../api/studio";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { useI18n } from "../../i18n";
 
@@ -182,15 +186,43 @@ export function StudioEditor() {
                   </button>
                 </div>
               ))}
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() =>
-                  setBlock(i, { ...block, images: [...block.images, ""] })
-                }
+              <div
+                style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}
               >
-                {t("studio.addImage")}
-              </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() =>
+                    setBlock(i, { ...block, images: [...block.images, ""] })
+                  }
+                >
+                  {t("studio.addImage")}
+                </button>
+                <label className="btn btn-secondary" style={{ margin: 0 }}>
+                  {t("studio.uploadImage")}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        const { url } = await uploadStudioImage(file);
+                        setBlocks((bs) =>
+                          bs.map((b, idx) =>
+                            idx === i && b.type === "gallery"
+                              ? { ...b, images: [...b.images, url] }
+                              : b,
+                          ),
+                        );
+                      } catch {
+                        setStatus(t("studio.uploadFailed"));
+                      }
+                    }}
+                  />
+                </label>
+              </div>
             </>
           )}
 

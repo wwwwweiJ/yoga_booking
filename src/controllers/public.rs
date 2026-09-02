@@ -1,8 +1,10 @@
 //! Unauthenticated endpoints. Everything here is reachable by a signed-out
 //! visitor, so it must expose only the bare minimum — currently just a
 //! studio's public name for its per-studio register page.
+use axum::body::Body;
 use loco_rs::prelude::*;
 use sea_orm::QueryOrder;
+use std::path::Path as StdPath;
 
 use crate::{
     dtos::{
@@ -76,10 +78,44 @@ async fn get_classes(Path(token): Path<String>, State(ctx): State<AppContext>) -
     format::json(items)
 }
 
+fn content_type_for(name: &str) -> &'static str {
+    match name.rsplit('.').next().unwrap_or("").to_ascii_lowercase().as_str() {
+        "png" => "image/png",
+        "jpg" | "jpeg" => "image/jpeg",
+        "gif" => "image/gif",
+        "webp" => "image/webp",
+        _ => "application/octet-stream",
+    }
+}
+
+/// Serve an uploaded studio image by filename. Public. The name is a single
+/// path segment; reject anything but a plain `<uuid>.<ext>` to avoid traversal.
+#[debug_handler]
+async fn serve_upload(Path(name): Path<String>, State(ctx): State<AppContext>) -> Result<Response> {
+    let safe = !name.is_empty()
+        && !name.contains("..")
+        && name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '.' | '-' | '_'));
+    if !safe {
+        return not_found();
+    }
+    let data: Vec<u8> = ctx
+        .storage
+        .download::<Vec<u8>>(StdPath::new(&format!("studio-uploads/{name}")))
+        .await
+        .map_err(|_| Error::NotFound)?;
+    Ok(format::render()
+        .header("content-type", content_type_for(&name))
+        .response()
+        .body(Body::from(data))?)
+}
+
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("/api/public")
         .add("/organizations/{token}", get(get_organization))
         .add("/organizations/{token}/page", get(get_page))
         .add("/organizations/{token}/classes", get(get_classes))
+        .add("/uploads/{name}", get(serve_upload))
 }

@@ -29,6 +29,14 @@ pub struct UpdatePageParams {
     pub blocks: Vec<Block>,
 }
 
+/// Result of uploading an image for a studio page (e.g. a gallery photo): a
+/// public URL the block can reference.
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../frontend/src/bindings/")]
+pub struct UploadedFile {
+    pub url: String,
+}
+
 /// The stored column may be null (no page yet) or — defensively — unreadable;
 /// either way, treat it as an empty page.
 #[must_use]

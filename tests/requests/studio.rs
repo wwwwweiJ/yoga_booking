@@ -1,3 +1,4 @@
+use axum_test::multipart::{MultipartForm, Part};
 use loco_rs::testing::prelude::*;
 use serde_json::Value;
 use serial_test::serial;
@@ -103,6 +104,62 @@ async fn public_classes_lists_upcoming_without_leaking_ids() {
             list[0].get("organization_id").is_none(),
             "no org id is exposed"
         );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn staff_can_upload_and_serve_a_studio_image() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_user_login(&request, &ctx).await;
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let form = MultipartForm::new().add_part(
+            "image",
+            Part::bytes(b"\x89PNG gallery-bytes".to_vec())
+                .file_name("g.png")
+                .mime_type("image/png"),
+        );
+        let response = request
+            .post("/api/studio/uploads")
+            .add_header(auth_key, auth_value)
+            .multipart(form)
+            .await;
+
+        assert_eq!(response.status_code(), 200);
+        let body: Value = response.json();
+        let url = body["url"].as_str().unwrap();
+        assert!(url.starts_with("/api/public/uploads/"));
+
+        // Served publicly (no auth).
+        let img = request.get(url).await;
+        assert_eq!(img.status_code(), 200);
+        assert!(!img.as_bytes().is_empty());
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn member_cannot_upload_a_studio_image() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_member_login(&request, &ctx).await;
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let form = MultipartForm::new().add_part(
+            "image",
+            Part::bytes(b"x".to_vec())
+                .file_name("g.png")
+                .mime_type("image/png"),
+        );
+        let response = request
+            .post("/api/studio/uploads")
+            .add_header(auth_key, auth_value)
+            .multipart(form)
+            .await;
+
+        assert_eq!(response.status_code(), 403);
     })
     .await;
 }
