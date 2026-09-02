@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { cancelBooking, listBookings, payBooking } from "../../api/bookings";
@@ -6,6 +7,7 @@ import { useI18n } from "../../i18n";
 export function BookingsList() {
   const queryClient = useQueryClient();
   const { t, locale } = useI18n();
+  const [scope, setScope] = useState<"upcoming" | "all">("upcoming");
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ["bookings"],
@@ -34,13 +36,32 @@ export function BookingsList() {
     );
   }
 
+  const items =
+    scope === "all"
+      ? data.items
+      : data.items.filter(
+          (b) => new Date(b.class.starts_at).getTime() >= Date.now(),
+        );
+
   return (
     <div>
       <div className="page-header">
         <h1>{t("bookings.title")}</h1>
+        <div className="lang-switch">
+          {(["upcoming", "all"] as const).map((s) => (
+            <button
+              key={s}
+              type="button"
+              className={s === scope ? "is-active" : ""}
+              onClick={() => setScope(s)}
+            >
+              {t(`classes.scope.${s}`)}
+            </button>
+          ))}
+        </div>
       </div>
 
-      {data.items.length === 0 ? (
+      {items.length === 0 ? (
         <div className="card empty">
           {t("bookings.empty")} <Link to="/classes">{t("bookings.browse")}</Link>
         </div>
@@ -57,7 +78,7 @@ export function BookingsList() {
             </tr>
           </thead>
           <tbody>
-            {data.items.map((booking) => (
+            {items.map((booking) => (
               <tr key={booking.id}>
                 <td>{booking.class.title}</td>
                 <td>{booking.class.instructor}</td>
@@ -116,7 +137,7 @@ export function BookingsList() {
       )}
 
       <p className="muted" style={{ marginTop: "0.75rem" }}>
-        {t("common.total", { count: data.total_items })}
+        {t("common.total", { count: items.length })}
       </p>
     </div>
   );
