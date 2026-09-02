@@ -122,6 +122,8 @@ export const en = {
   "studio.noUpcoming": "No upcoming classes.",
   "studio.heading": "Heading",
   "studio.subheading": "Subheading",
+  "studio.uploadBackground": "Upload background",
+  "studio.removeImage": "Remove image",
   "studio.text": "Text",
   "studio.imageUrl": "Image URL",
   "studio.addImage": "+ Image URL",

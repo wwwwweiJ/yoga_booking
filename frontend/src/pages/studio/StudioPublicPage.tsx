@@ -41,7 +41,18 @@ export function StudioPublicPage() {
       {blocks.length === 0 && <p className="muted">{t("studio.emptyPage")}</p>}
       {blocks.map((block, i) => {
         if (block.type === "hero") {
-          return (
+          return block.image ? (
+            <div
+              className="hero hero-image"
+              key={i}
+              style={{ backgroundImage: `url(${block.image})` }}
+            >
+              <div className="hero-overlay">
+                <h1>{block.heading}</h1>
+                <p>{block.subheading}</p>
+              </div>
+            </div>
+          ) : (
             <div className="hero" key={i}>
               <h1>{block.heading}</h1>
               <p>{block.subheading}</p>

@@ -122,6 +122,8 @@ export const zhTW: Record<TranslationKey, string> = {
   "studio.noUpcoming": "目前沒有即將開的課。",
   "studio.heading": "標題",
   "studio.subheading": "副標題",
+  "studio.uploadBackground": "上傳背景圖",
+  "studio.removeImage": "移除圖片",
   "studio.text": "內文",
   "studio.imageUrl": "圖片網址",
   "studio.addImage": "+ 圖片網址",

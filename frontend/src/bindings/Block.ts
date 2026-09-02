@@ -4,4 +4,9 @@
  * One section of a studio's customizable page. Tagged by `type`, so the
  * frontend sees a discriminated union it can render per block kind.
  */
-export type Block = { "type": "hero", heading: string, subheading: string, } | { "type": "about", text: string, } | { "type": "gallery", images: Array<string>, } | { "type": "schedule", heading: string, };
+export type Block = { "type": "hero", heading: string, subheading: string, 
+/**
+ * Optional background image URL (uploaded via `/api/studio/uploads`).
+ * Older stored heroes without this field deserialize to `None`.
+ */
+image: string | null, } | { "type": "about", text: string, } | { "type": "gallery", images: Array<string>, } | { "type": "schedule", heading: string, };

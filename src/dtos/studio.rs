@@ -7,7 +7,14 @@ use ts_rs::TS;
 #[serde(tag = "type", rename_all = "snake_case")]
 #[ts(export, export_to = "../frontend/src/bindings/")]
 pub enum Block {
-    Hero { heading: String, subheading: String },
+    Hero {
+        heading: String,
+        subheading: String,
+        /// Optional background image URL (uploaded via `/api/studio/uploads`).
+        /// Older stored heroes without this field deserialize to `None`.
+        #[serde(default)]
+        image: Option<String>,
+    },
     About { text: String },
     Gallery { images: Vec<String> },
     /// Renders the studio's upcoming classes on the public page.

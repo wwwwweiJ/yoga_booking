@@ -13,7 +13,7 @@ import { useI18n } from "../../i18n";
 function defaultBlock(type: Block["type"]): Block {
   switch (type) {
     case "hero":
-      return { type: "hero", heading: "", subheading: "" };
+      return { type: "hero", heading: "", subheading: "", image: null };
     case "about":
       return { type: "about", text: "" };
     case "gallery":
@@ -144,6 +144,51 @@ export function StudioEditor() {
                     setBlock(i, { ...block, subheading: e.target.value })
                   }
                 />
+              </div>
+              {block.image && (
+                <div style={{ margin: "0.5rem 0" }}>
+                  <img
+                    src={block.image}
+                    alt=""
+                    className="instructor-photo"
+                    style={{ width: "100%", height: 100 }}
+                  />
+                </div>
+              )}
+              <div style={{ display: "flex", gap: "0.5rem" }}>
+                <label className="btn btn-secondary" style={{ margin: 0 }}>
+                  {t("studio.uploadBackground")}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        const { url } = await uploadStudioImage(file);
+                        setBlocks((bs) =>
+                          bs.map((b, idx) =>
+                            idx === i && b.type === "hero"
+                              ? { ...b, image: url }
+                              : b,
+                          ),
+                        );
+                      } catch {
+                        setStatus(t("studio.uploadFailed"));
+                      }
+                    }}
+                  />
+                </label>
+                {block.image && (
+                  <button
+                    type="button"
+                    className="btn-danger"
+                    onClick={() => setBlock(i, { ...block, image: null })}
+                  >
+                    {t("studio.removeImage")}
+                  </button>
+                )}
               </div>
             </>
           )}

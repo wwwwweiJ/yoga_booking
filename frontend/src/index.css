@@ -434,3 +434,20 @@ dd {
   max-width: 34rem;
   margin: 0.5rem auto 1.5rem;
 }
+
+.hero-image {
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius);
+  padding: 0;
+  margin-bottom: 1.5rem;
+  overflow: hidden;
+}
+.hero-image .hero-overlay {
+  background: rgba(30, 40, 34, 0.5);
+  padding: 3.5rem 1.5rem;
+}
+.hero-image .hero-overlay h1,
+.hero-image .hero-overlay p {
+  color: #fff;
+}
