@@ -1,8 +1,10 @@
-# Yoga Booking
+# 瑜安伽 Yuan Yoga
 
 A full-stack, multi-tenant yoga studio booking app built on
-[Loco](https://loco.rs) (Rust) with a React frontend. Studios publish classes,
-customize their own public page, and take (mock) payments; members book a spot.
+[Loco](https://loco.rs) (Rust) with a React frontend, wearing the Yuan Yoga
+brand (elegant earth tones — Deep Taupe / Warm Cream / Soft Warm Gray). Studios
+publish classes, customize their own public page, and take (mock) payments;
+members book a spot.
 
 ## Stack
 

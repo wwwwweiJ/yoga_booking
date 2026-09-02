@@ -25,7 +25,7 @@ export const en = {
   "common.total": "{count} total",
   "common.loginLink": "Log in",
 
-  "home.title": "Breathe. Book. Flow.",
+  "home.title": "Breathe into a circle, flow into infinity.",
   "home.subtitle":
     "Reserve your place in classes at your yoga studio — see what's on, grab a spot, and keep track of your bookings.",
   "home.browse": "Browse classes",

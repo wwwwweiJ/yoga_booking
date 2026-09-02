@@ -8,7 +8,8 @@ export function Home() {
 
   return (
     <div className="hero">
-      <h1>{t("home.title")}</h1>
+      <img src="/logo.png" className="home-logo" alt="瑜安伽 Yuan Yoga" />
+      <h1 className="tagline">{t("home.title")}</h1>
       <p>{t("home.subtitle")}</p>
       {isAuthenticated ? (
         <Link className="btn" to="/classes">

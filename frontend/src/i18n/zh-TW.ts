@@ -26,7 +26,7 @@ export const zhTW: Record<TranslationKey, string> = {
   "common.total": "共 {count} 筆",
   "common.loginLink": "登入",
 
-  "home.title": "呼吸。預約。流動。",
+  "home.title": "呼吸成圓,流向無限",
   "home.subtitle":
     "在你的瑜伽工作室預約課程 —— 看看有哪些課、搶個位子,並管理你的預約。",
   "home.browse": "瀏覽課程",

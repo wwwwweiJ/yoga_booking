@@ -1,26 +1,26 @@
 /* ---------------------------------------------------------------------------
-   Yoga Booking — design system
-   A calm, warm studio aesthetic: sage greens, soft neutrals, rounded cards.
-   Plain CSS (no framework); most elements are styled by tag, with a handful
-   of utility classes for layout, badges, and button variants.
+   瑜安伽 Yuan Yoga — design system
+   Brand CI: elegant earth tones — Deep Taupe (#7D6F63), Warm Cream (#F7F2EC),
+   Soft Warm Gray (#D8CFCA). Plain CSS; most elements styled by tag, with a
+   handful of utility classes for layout, badges, and button variants.
 --------------------------------------------------------------------------- */
 
 :root {
-  --bg: #f4f2ec;
+  --bg: #f7f2ec; /* Warm Cream */
   --surface: #ffffff;
-  --surface-2: #faf9f5;
-  --text: #2f3a34;
-  --muted: #79847d;
-  --primary: #6b8f71;
-  --primary-dark: #517258;
-  --primary-tint: #e9f0ea;
+  --surface-2: #fbf8f4;
+  --text: #4a423b; /* dark taupe — readable body text */
+  --muted: #9a8f84; /* warm gray */
+  --primary: #7d6f63; /* Deep Taupe — brand */
+  --primary-dark: #63574c;
+  --primary-tint: #eee7df;
   --danger: #b0563f;
-  --danger-tint: #f6e7e2;
-  --border: #e5e2d9;
+  --danger-tint: #f4e6e0;
+  --border: #d8cfca; /* Soft Warm Gray */
   --radius: 14px;
   --radius-sm: 9px;
-  --shadow: 0 1px 2px rgba(47, 58, 52, 0.05), 0 10px 30px rgba(47, 58, 52, 0.06);
-  --ring: 0 0 0 3px rgba(107, 143, 113, 0.25);
+  --shadow: 0 1px 2px rgba(74, 66, 59, 0.05), 0 10px 30px rgba(74, 66, 59, 0.07);
+  --ring: 0 0 0 3px rgba(125, 111, 99, 0.28);
 }
 
 * {
@@ -78,13 +78,19 @@ h2 {
 .app-nav .brand {
   font-weight: 700;
   font-size: 1.05rem;
-  color: var(--text);
+  color: var(--primary-dark);
+  letter-spacing: 0.02em;
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
 }
 .app-nav .brand:hover {
   text-decoration: none;
+}
+.brand-logo {
+  height: 30px;
+  width: 30px;
+  object-fit: contain;
 }
 
 .app-nav .nav-links {
@@ -424,7 +430,7 @@ dd {
 
 .hero {
   text-align: center;
-  padding: 3.5rem 1rem 2rem;
+  padding: 2.5rem 1rem 2rem;
 }
 .hero h1 {
   font-size: 2.2rem;
@@ -433,6 +439,18 @@ dd {
   color: var(--muted);
   max-width: 34rem;
   margin: 0.5rem auto 1.5rem;
+}
+.home-logo {
+  width: 220px;
+  max-width: 70%;
+  height: auto;
+  margin: 0 auto 0.5rem;
+}
+.hero .tagline {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--primary-dark);
+  letter-spacing: 0.04em;
 }
 
 .hero-image {

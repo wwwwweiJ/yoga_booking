@@ -18,7 +18,7 @@ export function App() {
     <div>
       <nav className="app-nav">
         <Link to="/" className="brand">
-          <span aria-hidden="true">🧘</span> Yoga Booking
+          <img src="/logo.png" className="brand-logo" alt="" /> 瑜安伽 Yuan Yoga
         </Link>
         <div className="nav-links">
           {isAuthenticated && (
