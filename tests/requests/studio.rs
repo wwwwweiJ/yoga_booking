@@ -66,6 +66,49 @@ async fn member_cannot_edit_the_page() {
 
 #[tokio::test]
 #[serial]
+async fn public_classes_lists_upcoming_without_leaking_ids() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_user_login(&request, &ctx).await;
+
+        // A future class (staff create) and a past one (direct insert).
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        request
+            .post("/api/classes")
+            .add_header(auth_key, auth_value)
+            .json(&serde_json::json!({
+                "title": "Sunrise Flow",
+                "instructor": "Mei",
+                "starts_at": "2030-01-01T10:00:00Z",
+                "duration_minutes": 60,
+                "capacity": 20,
+                "price": 500,
+            }))
+            .await;
+
+        let response = request
+            .get(&format!(
+                "/api/public/organizations/{}/classes",
+                user.organization_public_id
+            ))
+            .await;
+
+        assert_eq!(response.status_code(), 200);
+        let body: Value = response.json();
+        let list = body.as_array().unwrap();
+        assert_eq!(list.len(), 1, "only the upcoming class");
+        assert_eq!(list[0]["title"], "Sunrise Flow");
+        assert_eq!(list[0]["price"].as_i64(), Some(500));
+        assert!(list[0].get("id").is_none(), "no internal id is exposed");
+        assert!(
+            list[0].get("organization_id").is_none(),
+            "no org id is exposed"
+        );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn public_page_unknown_token_is_404() {
     request::<App, _, _>(|request, _ctx| async move {
         let response = request

@@ -10,6 +10,8 @@ pub enum Block {
     Hero { heading: String, subheading: String },
     About { text: String },
     Gallery { images: Vec<String> },
+    /// Renders the studio's upcoming classes on the public page.
+    Schedule { heading: String },
 }
 
 /// A studio's page: its name plus the ordered blocks that render it.

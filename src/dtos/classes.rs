@@ -58,6 +58,43 @@ impl Class {
     }
 }
 
+/// A class as shown on a studio's *public* page — no ids or org internals, just
+/// what a prospective member needs to decide to sign up.
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../frontend/src/bindings/")]
+pub struct PublicClass {
+    pub title: String,
+    pub instructor: String,
+    pub starts_at: String,
+    #[ts(type = "number")]
+    pub duration_minutes: i32,
+    #[ts(type = "number")]
+    pub price: i32,
+    #[ts(type = "number")]
+    pub spots_left: i32,
+    pub photo_url: Option<String>,
+}
+
+impl PublicClass {
+    #[must_use]
+    pub fn from_parts(c: classes::Model, booked: i64) -> Self {
+        let spots_left = i32::try_from((i64::from(c.capacity) - booked).max(0)).unwrap_or(0);
+        let photo_url = c
+            .instructor_photo
+            .as_ref()
+            .map(|_| format!("/api/classes/{}/photo", c.id));
+        Self {
+            title: c.title,
+            instructor: c.instructor,
+            starts_at: c.starts_at.to_rfc3339(),
+            duration_minutes: c.duration_minutes,
+            price: c.price,
+            spots_left,
+            photo_url,
+        }
+    }
+}
+
 /// Body for creating a class. The owning studio is implicit — always the
 /// authenticated user's — so it is not part of the request. `starts_at` is
 /// parsed from RFC 3339 in the controller.

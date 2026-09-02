@@ -14,6 +14,8 @@ function defaultBlock(type: Block["type"]): Block {
       return { type: "about", text: "" };
     case "gallery":
       return { type: "gallery", images: [] };
+    case "schedule":
+      return { type: "schedule", heading: "" };
   }
 }
 
@@ -191,6 +193,23 @@ export function StudioEditor() {
               </button>
             </>
           )}
+
+          {block.type === "schedule" && (
+            <>
+              <div>
+                <label>{t("studio.heading")}</label>
+                <input
+                  value={block.heading}
+                  onChange={(e) =>
+                    setBlock(i, { ...block, heading: e.target.value })
+                  }
+                />
+              </div>
+              <p className="muted" style={{ margin: 0 }}>
+                {t("studio.scheduleHint")}
+              </p>
+            </>
+          )}
         </div>
       ))}
 
@@ -211,6 +230,13 @@ export function StudioEditor() {
           onClick={() => add("gallery")}
         >
           {t("studio.addGallery")}
+        </button>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => add("schedule")}
+        >
+          {t("studio.addSchedule")}
         </button>
       </div>
 
