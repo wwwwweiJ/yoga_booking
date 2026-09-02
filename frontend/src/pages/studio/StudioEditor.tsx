@@ -36,6 +36,7 @@ export function StudioEditor() {
 
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [status, setStatus] = useState<string | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   useEffect(() => {
     if (page.data) {
@@ -71,6 +72,16 @@ export function StudioEditor() {
     [copy[i], copy[j]] = [copy[j], copy[i]];
     setBlocks(copy);
   };
+  // Drag `from` to sit at position `to` (used by native drag-and-drop).
+  const reorder = (from: number, to: number) => {
+    if (from === to) return;
+    setBlocks((bs) => {
+      const copy = [...bs];
+      const [moved] = copy.splice(from, 1);
+      copy.splice(to, 0, moved);
+      return copy;
+    });
+  };
   const removeBlock = (i: number) =>
     setBlocks((bs) => bs.filter((_, idx) => idx !== i));
   const add = (type: Block["type"]) =>
@@ -97,9 +108,31 @@ export function StudioEditor() {
       )}
 
       {blocks.map((block, i) => (
-        <div className="card" key={i} style={{ marginBottom: "1rem" }}>
-          <div className="page-header" style={{ marginBottom: "0.75rem" }}>
-            <strong>{t(`studio.block.${block.type}`)}</strong>
+        <div
+          className={`card${dragIndex === i ? " block-dragging" : ""}`}
+          key={i}
+          style={{ marginBottom: "1rem" }}
+          onDragOver={(e) => {
+            if (dragIndex !== null) e.preventDefault();
+          }}
+          onDrop={() => {
+            if (dragIndex !== null) reorder(dragIndex, i);
+            setDragIndex(null);
+          }}
+        >
+          <div
+            className="page-header block-handle"
+            style={{ marginBottom: "0.75rem" }}
+            draggable
+            onDragStart={() => setDragIndex(i)}
+            onDragEnd={() => setDragIndex(null)}
+          >
+            <strong>
+              <span className="drag-dots" aria-hidden="true">
+                ⠿
+              </span>{" "}
+              {t(`studio.block.${block.type}`)}
+            </strong>
             <div style={{ display: "flex", gap: "0.35rem" }}>
               <button
                 type="button"

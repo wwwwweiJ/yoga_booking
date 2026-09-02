@@ -315,6 +315,22 @@ select.is-invalid:focus {
   font-size: 0.82rem;
 }
 
+/* Draggable studio blocks */
+.block-handle {
+  cursor: grab;
+  user-select: none;
+}
+.block-handle:active {
+  cursor: grabbing;
+}
+.drag-dots {
+  color: var(--muted);
+  letter-spacing: -2px;
+}
+.block-dragging {
+  opacity: 0.5;
+}
+
 /* Instructor photos */
 .instructor-cell {
   display: inline-flex;
