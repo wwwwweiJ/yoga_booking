@@ -50,6 +50,8 @@ export const en = {
 
   "classes.title": "Classes",
   "classes.new": "New class",
+  "classes.scope.upcoming": "Upcoming",
+  "classes.scope.all": "All",
   "classes.loadFailed": "Failed to load classes",
   "classes.empty": "No classes yet.",
   "classes.col.title": "Title",

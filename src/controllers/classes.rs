@@ -2,6 +2,7 @@ use axum::body::{Body, Bytes};
 use axum::http::StatusCode;
 use loco_rs::controller::ErrorDetail;
 use loco_rs::prelude::*;
+use serde::Deserialize;
 use std::path::Path as StdPath;
 
 use crate::{
@@ -59,20 +60,28 @@ async fn booked_count(ctx: &AppContext, class_id: i64) -> Result<i64> {
         .unwrap_or(0))
 }
 
+/// `?scope=upcoming` (default) hides classes that have already started;
+/// `?scope=all` shows every class (for teachers reviewing past sessions).
+#[derive(Debug, Deserialize)]
+pub struct ListParams {
+    pub scope: Option<String>,
+    #[serde(flatten)]
+    pub pagination: query::PaginationQuery,
+}
+
 #[debug_handler]
 async fn list(
     auth: auth::JWT,
     State(ctx): State<AppContext>,
-    Query(pagination): Query<query::PaginationQuery>,
+    Query(params): Query<ListParams>,
 ) -> Result<Response> {
     let org_id = current_org_id(&auth, &ctx).await?;
-    let res = query::paginate(
-        &ctx.db,
-        classes::Entity::find().filter(classes::Column::OrganizationId.eq(org_id)),
-        None,
-        &pagination,
-    )
-    .await?;
+    let mut select =
+        classes::Entity::find().filter(classes::Column::OrganizationId.eq(org_id));
+    if params.scope.as_deref() != Some("all") {
+        select = select.filter(classes::Column::StartsAt.gte(chrono::Utc::now().fixed_offset()));
+    }
+    let res = query::paginate(&ctx.db, select, None, &params.pagination).await?;
 
     // One booking-count query for the whole page, then attach spots_left.
     let class_ids: Vec<i64> = res.page.iter().map(|c| c.id).collect();

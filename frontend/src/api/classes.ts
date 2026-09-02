@@ -5,18 +5,18 @@ import type { UpdateClassParams } from "../bindings/UpdateClassParams";
 import { getToken } from "../auth/token";
 import { ApiClientError, del, get, post, put } from "./client";
 
+export type ClassScope = "upcoming" | "all";
+
 export function listClasses(
-  organizationId?: number,
+  scope: ClassScope = "upcoming",
   page = 1,
   pageSize = 20,
 ): Promise<Page<Class>> {
   const params = new URLSearchParams({
+    scope,
     page: String(page),
     page_size: String(pageSize),
   });
-  if (organizationId !== undefined) {
-    params.set("organization_id", String(organizationId));
-  }
   return get<Page<Class>>(`/api/classes?${params.toString()}`);
 }
 

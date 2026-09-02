@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { ApiClientError } from "../../api/client";
 import { createBooking } from "../../api/bookings";
+import type { ClassScope } from "../../api/classes";
 import { deleteClass, listClasses } from "../../api/classes";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { useI18n } from "../../i18n";
@@ -14,10 +16,11 @@ export function ClassesList() {
   const queryClient = useQueryClient();
   const { t, locale } = useI18n();
   const { isStaff } = useCurrentUser();
+  const [scope, setScope] = useState<ClassScope>("upcoming");
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["classes"],
-    queryFn: () => listClasses(),
+    queryKey: ["classes", scope],
+    queryFn: () => listClasses(scope),
   });
 
   const remove = useMutation({
@@ -55,11 +58,25 @@ export function ClassesList() {
     <div>
       <div className="page-header">
         <h1>{t("classes.title")}</h1>
-        {isStaff && (
-          <Link to="/classes/new" className="btn">
-            {t("classes.new")}
-          </Link>
-        )}
+        <div style={{ display: "flex", gap: "0.75rem", alignItems: "center" }}>
+          <div className="lang-switch">
+            {(["upcoming", "all"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                className={s === scope ? "is-active" : ""}
+                onClick={() => setScope(s)}
+              >
+                {t(`classes.scope.${s}`)}
+              </button>
+            ))}
+          </div>
+          {isStaff && (
+            <Link to="/classes/new" className="btn">
+              {t("classes.new")}
+            </Link>
+          )}
+        </div>
       </div>
 
       {data.items.length === 0 ? (

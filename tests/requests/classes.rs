@@ -200,6 +200,56 @@ async fn list_returns_only_my_orgs_classes() {
 
 #[tokio::test]
 #[serial]
+async fn list_defaults_to_upcoming_scope_all_shows_past() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_user_login(&request, &ctx).await;
+        create_class(&request, &user.token).await; // a future (2030) class
+
+        // A class already in the past, in the same studio.
+        classes::ActiveModel {
+            organization_id: ActiveValue::set(user.organization_id),
+            title: ActiveValue::set("Old Class".to_string()),
+            instructor: ActiveValue::set("Old Teacher".to_string()),
+            starts_at: ActiveValue::set(
+                chrono::DateTime::parse_from_rfc3339("2020-01-01T10:00:00Z").unwrap(),
+            ),
+            duration_minutes: ActiveValue::set(60),
+            capacity: ActiveValue::set(20),
+            ..Default::default()
+        }
+        .insert(&ctx.db)
+        .await
+        .unwrap();
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let upcoming: Value = request
+            .get("/api/classes")
+            .add_header(auth_key, auth_value)
+            .await
+            .json();
+        assert_eq!(
+            upcoming["total_items"].as_u64(),
+            Some(1),
+            "default hides the past class"
+        );
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&user.token);
+        let all: Value = request
+            .get("/api/classes?scope=all")
+            .add_header(auth_key, auth_value)
+            .await
+            .json();
+        assert_eq!(
+            all["total_items"].as_u64(),
+            Some(2),
+            "scope=all includes the past class"
+        );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn getting_another_orgs_class_is_404() {
     request::<App, _, _>(|request, ctx| async move {
         let user = prepare_data::init_user_login(&request, &ctx).await;

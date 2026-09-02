@@ -50,6 +50,8 @@ export const zhTW: Record<TranslationKey, string> = {
 
   "classes.title": "課程",
   "classes.new": "新增課程",
+  "classes.scope.upcoming": "即將",
+  "classes.scope.all": "全部",
   "classes.loadFailed": "載入課程失敗",
   "classes.empty": "還沒有任何課程。",
   "classes.col.title": "名稱",
