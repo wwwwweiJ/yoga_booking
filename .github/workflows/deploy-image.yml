@@ -46,3 +46,20 @@ jobs:
           # Cache layers between runs so later builds don't recompile all of Rust.
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      # After the fresh image is pushed, tell the host to pull and redeploy it.
+      # Enable by adding a repo secret RENDER_DEPLOY_HOOK with the service's
+      # Deploy Hook URL (Render: service → Settings → Deploy Hook). Without the
+      # secret this step is a harmless no-op, so the build still works before
+      # you've wired it up.
+      - name: Trigger Render deploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            echo "Image pushed — triggering Render deploy…"
+            curl -fsSL "$RENDER_DEPLOY_HOOK"
+            echo "Render deploy triggered."
+          else
+            echo "RENDER_DEPLOY_HOOK secret not set; skipping auto-deploy."
+          fi
