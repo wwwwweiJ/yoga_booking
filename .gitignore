@@ -20,3 +20,9 @@ target/
 
 # Uploaded files (instructor photos, etc.) — local storage backend
 uploads/
+
+# Node dependencies and the built SPA — both are reproduced from source by the
+# Docker build (and by `pnpm install` / `pnpm build`), so they never belong in
+# git. node_modules is ~70 MB; keep it out of the push.
+node_modules/
+frontend/dist/

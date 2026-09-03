@@ -1,0 +1,29 @@
+# Keep the build context small and reproducible. Anything here is either
+# rebuilt inside the image or irrelevant to the build.
+
+# Rust build output — 7+ GB; never send it to the daemon.
+target/
+
+# Node deps and the built SPA — reinstalled / rebuilt in the frontend stage.
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# VCS and CI metadata.
+.git/
+.github/
+.gitignore
+
+# Local runtime state that must not leak into the image.
+uploads/
+*.sqlite
+*.sqlite-*
+**/config/local.yaml
+**/config/*.local.yaml
+
+# Editor / OS cruft.
+.DS_Store
+**/*.rs.bk
+
+# Docs and local dev helpers — not needed to build or run.
+dev.sh

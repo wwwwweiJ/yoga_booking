@@ -62,19 +62,25 @@ workers:
 
 # Mailer Configuration.
 mailer:
+  # `stub: true` (the default) records mail in memory instead of sending it, so
+  # the app boots and registration works without any SMTP server — right for a
+  # demo. To send real mail, set MAILER_STUB=false and the MAILER_* vars below.
+  stub: <%= get_env(name="MAILER_STUB", default="true") %>
   # SMTP mailer configuration.
   smtp:
     # Enable/Disable smtp mailer.
     enable: true
     # SMTP server host. e.x localhost, smtp.gmail.com
-    host: <%= get_env(name="MAILER_HOST") %>
+    host: <%= get_env(name="MAILER_HOST", default="localhost") %>
     # SMTP server port
     port: <%= get_env(name="MAILER_PORT", default="587") %>
     # Use secure connection (SSL/TLS).
     secure: true
     auth:
-      user: <%= get_env(name="MAILER_USER") %>
-      password: <%= get_env(name="MAILER_PASSWORD") %>
+      # Quoted so an unset var renders as an empty string, not a YAML null
+      # (which would fail to deserialize into the String these fields expect).
+      user: "<%= get_env(name="MAILER_USER", default="") %>"
+      password: "<%= get_env(name="MAILER_PASSWORD", default="") %>"
     # Override the SMTP hello name (default is the machine's hostname)
     # hello_name:
 
