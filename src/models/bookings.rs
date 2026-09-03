@@ -6,6 +6,11 @@ use sea_orm::{entity::prelude::*, QuerySelect};
 pub use super::_entities::bookings::{ActiveModel, Column, Entity, Model};
 pub type Bookings = Entity;
 
+/// A `booked` seat counts toward capacity; a `waitlisted` one is in line for a
+/// seat that frees up.
+pub const STATUS_BOOKED: &str = "booked";
+pub const STATUS_WAITLISTED: &str = "waitlisted";
+
 #[async_trait::async_trait]
 impl ActiveModelBehavior for ActiveModel {
     async fn before_save<C>(self, _db: &C, insert: bool) -> std::result::Result<Self, DbErr>
@@ -24,9 +29,9 @@ impl ActiveModelBehavior for ActiveModel {
 
 // implement your read-oriented logic here
 impl Model {
-    /// How many bookings each of the given classes currently has, keyed by
-    /// class id (classes with none are simply absent). One query, then tally in
-    /// memory — no N+1 across a page of classes.
+    /// How many *booked* seats each of the given classes has (waitlisted rows
+    /// don't take a seat), keyed by class id (classes with none are absent).
+    /// One query, then tally in memory — no N+1 across a page of classes.
     pub async fn counts_by_class(
         db: &DatabaseConnection,
         class_ids: &[i64],
@@ -38,6 +43,7 @@ impl Model {
             .select_only()
             .column(Column::ClassId)
             .filter(Column::ClassId.is_in(class_ids.to_vec()))
+            .filter(Column::Status.eq(STATUS_BOOKED))
             .into_tuple()
             .all(db)
             .await?;

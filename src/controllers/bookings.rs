@@ -2,12 +2,15 @@ use std::collections::HashMap;
 
 use axum::http::StatusCode;
 use loco_rs::prelude::*;
-use sea_orm::PaginatorTrait;
+use sea_orm::QueryOrder;
 use serde::Deserialize;
 
 use crate::{
     dtos::{bookings::Booking, common::Page},
-    models::_entities::{bookings, classes, users},
+    models::{
+        _entities::{bookings, classes, users},
+        bookings::{STATUS_BOOKED, STATUS_WAITLISTED},
+    },
 };
 
 #[derive(Debug, Deserialize)]
@@ -109,25 +112,34 @@ async fn create(
         return Err(ModelError::EntityAlreadyExists.into());
     }
 
-    // Capacity check.
-    let booked = bookings::Entity::find()
-        .filter(bookings::Column::ClassId.eq(class.id))
-        .count(&ctx.db)
-        .await?;
-    if booked >= u64::try_from(class.capacity).unwrap_or(0) {
-        return bad_request(format!("class {} is full", class.id));
-    }
+    // A full class doesn't reject — it puts the member on the waitlist. Only
+    // `booked` seats count toward capacity.
+    let booked = bookings::Model::counts_by_class(&ctx.db, &[class.id])
+        .await?
+        .get(&class.id)
+        .copied()
+        .unwrap_or(0);
+    let status = if booked >= i64::from(class.capacity) {
+        STATUS_WAITLISTED
+    } else {
+        STATUS_BOOKED
+    };
 
     let booking = bookings::ActiveModel {
         user_id: ActiveValue::set(user.id),
         class_id: ActiveValue::set(class.id),
+        status: ActiveValue::set(status.to_string()),
         ..Default::default()
     }
     .insert(&ctx.db)
     .await?;
 
-    // This booking takes one of the seats counted above.
-    let class_booked = i64::try_from(booked).unwrap_or(0) + 1;
+    // A waitlisted booking takes no seat; a booked one takes the next.
+    let class_booked = if status == STATUS_BOOKED {
+        booked + 1
+    } else {
+        booked
+    };
     format::render()
         .status(StatusCode::CREATED)
         .json(Booking::from_parts(booking, class, class_booked))
@@ -180,9 +192,27 @@ async fn remove(
         return not_found();
     };
 
+    let freed_seat = booking.status == STATUS_BOOKED;
+    let class_id = booking.class_id;
     bookings::Entity::delete_by_id(booking.id)
         .exec(&ctx.db)
         .await?;
+
+    // Cancelling a seat promotes the longest-waiting person on the waitlist.
+    if freed_seat {
+        if let Some(next) = bookings::Entity::find()
+            .filter(bookings::Column::ClassId.eq(class_id))
+            .filter(bookings::Column::Status.eq(STATUS_WAITLISTED))
+            .order_by_asc(bookings::Column::Id)
+            .one(&ctx.db)
+            .await?
+        {
+            let mut active = next.into_active_model();
+            active.status = ActiveValue::set(STATUS_BOOKED.to_string());
+            active.update(&ctx.db).await?;
+        }
+    }
+
     format::render().status(StatusCode::NO_CONTENT).empty()
 }
 

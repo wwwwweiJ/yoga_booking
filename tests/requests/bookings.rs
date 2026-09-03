@@ -71,6 +71,7 @@ async fn can_book_a_class() {
             body["payment_status"], "pending",
             "a fresh booking is unpaid until the mock payment"
         );
+        assert_eq!(body["status"], "booked", "a seat is available");
     })
     .await;
 }
@@ -202,13 +203,13 @@ async fn double_booking_returns_409() {
 
 #[tokio::test]
 #[serial]
-async fn full_class_returns_400() {
+async fn full_class_waitlists() {
     request::<App, _, _>(|request, ctx| async move {
         let owner = prepare_data::init_user_login(&request, &ctx).await;
         let class_id = seed_class(&request, &owner.token, 1).await;
         assert_eq!(book(&request, &owner.token, class_id).await.status_code(), 201);
 
-        // A second member of the SAME studio finds the class already full.
+        // A second member of the SAME studio joins the waitlist instead.
         let other = prepare_data::register_and_login(
             &request,
             "second@loco.com",
@@ -217,7 +218,48 @@ async fn full_class_returns_400() {
         .await;
         let response = book(&request, &other.token, class_id).await;
 
-        assert_eq!(response.status_code(), 400, "a full class rejects booking");
+        assert_eq!(response.status_code(), 201, "a full class waitlists, not rejects");
+        let body: Value = response.json();
+        assert_eq!(body["status"], "waitlisted");
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn cancelling_a_seat_promotes_the_waitlist() {
+    request::<App, _, _>(|request, ctx| async move {
+        let owner = prepare_data::init_user_login(&request, &ctx).await;
+        let class_id = seed_class(&request, &owner.token, 1).await;
+        let owner_booking: Value = book(&request, &owner.token, class_id).await.json();
+        let owner_booking_id = owner_booking["id"].as_i64().unwrap();
+
+        let other = prepare_data::register_and_login(
+            &request,
+            "second@loco.com",
+            &owner.organization_public_id,
+        )
+        .await;
+        let waitlisted: Value = book(&request, &other.token, class_id).await.json();
+        assert_eq!(waitlisted["status"], "waitlisted");
+
+        // Owner cancels — the waitlisted member should be promoted.
+        let (auth_key, auth_value) = prepare_data::auth_header(&owner.token);
+        request
+            .delete(&format!("/api/bookings/{owner_booking_id}"))
+            .add_header(auth_key, auth_value)
+            .await;
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&other.token);
+        let mine: Value = request
+            .get("/api/bookings")
+            .add_header(auth_key, auth_value)
+            .await
+            .json();
+        assert_eq!(
+            mine["items"][0]["status"], "booked",
+            "the waitlisted member takes the freed seat"
+        );
     })
     .await;
 }

@@ -30,12 +30,16 @@ export function ClassesList() {
 
   const book = useMutation({
     mutationFn: (classId: number) => createBooking({ class_id: classId }),
-    onSuccess: () => {
+    onSuccess: (booking) => {
       queryClient.invalidateQueries({ queryKey: ["bookings"] });
-      window.alert(t("classes.booked"));
+      window.alert(
+        booking.status === "waitlisted"
+          ? t("classes.waitlistedToast")
+          : t("classes.booked"),
+      );
     },
     onError: (err) => {
-      // The API returns 409 (already booked) / 400 (full) with a message.
+      // The API returns 409 (already booked) with a message.
       window.alert(
         err instanceof ApiClientError ? err.message : t("classes.bookFailed"),
       );
@@ -150,10 +154,10 @@ export function ClassesList() {
                     <td>
                       <button
                         type="button"
-                        disabled={book.isPending || full || started}
+                        disabled={book.isPending || started}
                         onClick={() => book.mutate(klass.id)}
                       >
-                        {t("classes.book")}
+                        {full ? t("classes.joinWaitlist") : t("classes.book")}
                       </button>{" "}
                       {isStaff && (
                         <button

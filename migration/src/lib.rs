@@ -12,6 +12,7 @@ mod m20260901_120000_add_role_to_users;
 mod m20260901_130000_add_payment;
 mod m20260901_140000_add_instructor_photo;
 mod m20260901_150000_add_studio_page;
+mod m20260902_120000_add_booking_status;
 pub struct Migrator;
 
 #[async_trait::async_trait]
@@ -28,6 +29,7 @@ impl MigratorTrait for Migrator {
             Box::new(m20260901_130000_add_payment::Migration),
             Box::new(m20260901_140000_add_instructor_photo::Migration),
             Box::new(m20260901_150000_add_studio_page::Migration),
+            Box::new(m20260902_120000_add_booking_status::Migration),
             // inject-above (do not remove this comment)
         ]
     }

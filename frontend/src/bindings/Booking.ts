@@ -8,6 +8,10 @@ import type { Class } from "./Class";
  */
 export type Booking = { id: number, class_id: number, 
 /**
+ * `booked` (holds a seat) or `waitlisted` (in line for one).
+ */
+status: string, 
+/**
  * `pending` until the (mock) payment succeeds, then `paid`.
  */
 payment_status: string, created_at: string, class: Class, };

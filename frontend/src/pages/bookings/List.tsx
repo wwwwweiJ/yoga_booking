@@ -86,7 +86,11 @@ export function BookingsList() {
                   {new Date(booking.class.starts_at).toLocaleString(locale)}
                 </td>
                 <td>
-                  {booking.payment_status === "paid" ? (
+                  {booking.status === "waitlisted" ? (
+                    <span className="badge badge-muted">
+                      {t("bookings.status.waitlisted")}
+                    </span>
+                  ) : booking.payment_status === "paid" ? (
                     <span className="badge badge-open">
                       {t("bookings.status.paid")}
                     </span>
@@ -97,19 +101,20 @@ export function BookingsList() {
                   )}
                 </td>
                 <td>
-                  {booking.payment_status === "pending" && (
-                    <>
-                      <button
-                        type="button"
-                        disabled={pay.isPending}
-                        onClick={() => pay.mutate(booking.id)}
-                      >
-                        {pay.isPending
-                          ? t("bookings.paying")
-                          : t("bookings.pay")}
-                      </button>{" "}
-                    </>
-                  )}
+                  {booking.status === "booked" &&
+                    booking.payment_status === "pending" && (
+                      <>
+                        <button
+                          type="button"
+                          disabled={pay.isPending}
+                          onClick={() => pay.mutate(booking.id)}
+                        >
+                          {pay.isPending
+                            ? t("bookings.paying")
+                            : t("bookings.pay")}
+                        </button>{" "}
+                      </>
+                    )}
                   <button
                     type="button"
                     className="btn-danger"
