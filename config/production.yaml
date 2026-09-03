@@ -98,10 +98,14 @@ database:
   uri: <%= get_env(name="DATABASE_URL") %>
   # When enabled, the sql query will be logged.
   enable_logging: <%= get_env(name="DB_LOGGING", default="false") %>
-  # Set the timeout duration when acquiring a connection.
-  connect_timeout: <%= get_env(name="DB_CONNECT_TIMEOUT", default="500") %>
-  # Set the idle duration before closing a connection.
-  idle_timeout: <%= get_env(name="DB_IDLE_TIMEOUT", default="500") %>
+  # Timeout (ms) when opening a connection. The dev default of 500ms is far too
+  # short for a managed/serverless Postgres (e.g. Neon) that may be waking from
+  # scale-to-zero across the network — the first connect can take a few seconds,
+  # and 500ms fails boot with PoolTimedOut. 10s gives the cold start room.
+  connect_timeout: <%= get_env(name="DB_CONNECT_TIMEOUT", default="10000") %>
+  # Idle duration (ms) before a pooled connection is closed. 500ms thrashes
+  # (reconnect on nearly every request); 30s keeps warm connections around.
+  idle_timeout: <%= get_env(name="DB_IDLE_TIMEOUT", default="30000") %>
   # Minimum number of connections for a pool.
   min_connections: <%= get_env(name="DB_MIN_CONNECTIONS", default="1") %>
   # Maximum number of connections for a pool. Serving real traffic on the
