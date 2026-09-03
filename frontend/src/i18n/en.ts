@@ -85,6 +85,8 @@ export const en = {
   "classes.form.photo": "Instructor photo",
   "classes.form.uploading": "Uploading…",
   "classes.form.uploadFailed": "Upload failed",
+  "classes.roster": "Roster",
+  "classes.rosterEmpty": "No one has booked yet.",
 
   "bookings.title": "My bookings",
   "bookings.loadFailed": "Failed to load bookings",
@@ -96,6 +98,7 @@ export const en = {
   "bookings.col.payment": "Payment",
   "bookings.status.pending": "Pending",
   "bookings.status.paid": "Paid",
+  "bookings.status.booked": "Booked",
   "bookings.status.waitlisted": "Waitlisted",
   "bookings.pay": "Pay",
   "bookings.paying": "Paying…",

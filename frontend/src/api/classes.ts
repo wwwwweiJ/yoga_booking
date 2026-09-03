@@ -1,6 +1,7 @@
 import type { Class } from "../bindings/Class";
 import type { CreateClassParams } from "../bindings/CreateClassParams";
 import type { Page } from "../bindings/Page";
+import type { RosterEntry } from "../bindings/RosterEntry";
 import type { UpdateClassParams } from "../bindings/UpdateClassParams";
 import { getToken } from "../auth/token";
 import { ApiClientError, del, get, post, put } from "./client";
@@ -37,6 +38,10 @@ export function updateClass(
 
 export function deleteClass(id: number): Promise<void> {
   return del(`/api/classes/${id}`);
+}
+
+export function getClassRoster(id: number): Promise<RosterEntry[]> {
+  return get<RosterEntry[]>(`/api/classes/${id}/bookings`);
 }
 
 // Multipart upload — the shared JSON client can't be reused (it forces a JSON

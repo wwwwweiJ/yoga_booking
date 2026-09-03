@@ -2,11 +2,13 @@ use axum::body::{Body, Bytes};
 use axum::http::StatusCode;
 use loco_rs::controller::ErrorDetail;
 use loco_rs::prelude::*;
+use sea_orm::QueryOrder;
 use serde::Deserialize;
 use std::path::Path as StdPath;
 
 use crate::{
     dtos::{
+        bookings::RosterEntry,
         classes::{Class, CreateClassParams, UpdateClassParams},
         common::Page,
     },
@@ -261,6 +263,40 @@ async fn serve_photo(Path(id): Path<i64>, State(ctx): State<AppContext>) -> Resu
         .body(Body::from(data))?)
 }
 
+/// The class roster for its teacher: who's booked and who's waitlisted, with
+/// their payment status. Staff-only, and scoped to the caller's studio.
+#[debug_handler]
+async fn roster(
+    auth: auth::JWT,
+    Path(id): Path<i64>,
+    State(ctx): State<AppContext>,
+) -> Result<Response> {
+    let org_id = require_staff_org_id(&auth, &ctx).await?;
+    load_item(&ctx, id, org_id).await?; // 404 unless it's the caller's class
+
+    // booked before waitlisted ("booked" < "waitlisted"), each oldest-first.
+    let rows = bookings::Entity::find()
+        .filter(bookings::Column::ClassId.eq(id))
+        .order_by_asc(bookings::Column::Status)
+        .order_by_asc(bookings::Column::Id)
+        .find_also_related(users::Entity)
+        .all(&ctx.db)
+        .await?;
+
+    let roster: Vec<RosterEntry> = rows
+        .into_iter()
+        .filter_map(|(booking, user)| {
+            user.map(|u| RosterEntry {
+                name: u.name,
+                email: u.email,
+                status: booking.status,
+                payment_status: booking.payment_status,
+            })
+        })
+        .collect();
+    format::json(roster)
+}
+
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("/api/classes")
@@ -271,4 +307,5 @@ pub fn routes() -> Routes {
         .add("/{id}", delete(remove))
         .add("/{id}/photo", post(upload_photo))
         .add("/{id}/photo", get(serve_photo))
+        .add("/{id}/bookings", get(roster))
 }

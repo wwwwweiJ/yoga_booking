@@ -36,6 +36,17 @@ impl Booking {
     }
 }
 
+/// One entry in a class's roster, as a teacher sees it: which member holds
+/// which kind of spot, and whether they've paid.
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../frontend/src/bindings/")]
+pub struct RosterEntry {
+    pub name: String,
+    pub email: String,
+    pub status: String,
+    pub payment_status: String,
+}
+
 /// Body for making a booking. The booker is the authenticated user (from the
 /// JWT), so only the target class is supplied.
 #[derive(Debug, Serialize, Deserialize, TS)]

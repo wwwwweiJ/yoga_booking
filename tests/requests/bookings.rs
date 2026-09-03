@@ -78,6 +78,68 @@ async fn can_book_a_class() {
 
 #[tokio::test]
 #[serial]
+async fn staff_sees_the_class_roster() {
+    request::<App, _, _>(|request, ctx| async move {
+        let owner = prepare_data::init_user_login(&request, &ctx).await;
+        let class_id = seed_class(&request, &owner.token, 1).await;
+
+        let m1 = prepare_data::register_and_login(
+            &request,
+            "m1@loco.com",
+            &owner.organization_public_id,
+        )
+        .await;
+        assert_eq!(book(&request, &m1.token, class_id).await.status_code(), 201);
+        let m2 = prepare_data::register_and_login(
+            &request,
+            "m2@loco.com",
+            &owner.organization_public_id,
+        )
+        .await;
+        assert_eq!(book(&request, &m2.token, class_id).await.status_code(), 201);
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&owner.token);
+        let roster: Value = request
+            .get(&format!("/api/classes/{class_id}/bookings"))
+            .add_header(auth_key, auth_value)
+            .await
+            .json();
+
+        let list = roster.as_array().unwrap();
+        assert_eq!(list.len(), 2);
+        assert_eq!(list[0]["status"], "booked", "booked members come first");
+        assert_eq!(list[0]["email"], "m1@loco.com");
+        assert_eq!(list[1]["status"], "waitlisted");
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn member_cannot_see_the_roster() {
+    request::<App, _, _>(|request, ctx| async move {
+        let owner = prepare_data::init_user_login(&request, &ctx).await;
+        let class_id = seed_class(&request, &owner.token, 20).await;
+        let member = prepare_data::register_and_login(
+            &request,
+            "m@loco.com",
+            &owner.organization_public_id,
+        )
+        .await;
+
+        let (auth_key, auth_value) = prepare_data::auth_header(&member.token);
+        let response = request
+            .get(&format!("/api/classes/{class_id}/bookings"))
+            .add_header(auth_key, auth_value)
+            .await;
+
+        assert_eq!(response.status_code(), 403);
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn can_pay_for_a_booking() {
     request::<App, _, _>(|request, ctx| async move {
         let user = prepare_data::init_user_login(&request, &ctx).await;

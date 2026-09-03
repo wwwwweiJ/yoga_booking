@@ -6,6 +6,7 @@ import { ApiClientError } from "../../api/client";
 import {
   createClass,
   getClass,
+  getClassRoster,
   updateClass,
   uploadClassPhoto,
 } from "../../api/classes";
@@ -45,6 +46,12 @@ export function ClassForm() {
   const existing = useQuery({
     queryKey: ["classes", classId],
     queryFn: () => getClass(classId as number),
+    enabled: isEdit,
+  });
+
+  const roster = useQuery({
+    queryKey: ["class-roster", classId],
+    queryFn: () => getClassRoster(classId as number),
     enabled: isEdit,
   });
 
@@ -232,6 +239,51 @@ export function ClassForm() {
           />
           {uploadPhoto.isPending && (
             <p className="muted">{t("classes.form.uploading")}</p>
+          )}
+        </div>
+      )}
+
+      {isEdit && (
+        <div style={{ marginTop: "1.5rem" }}>
+          <h2>{t("classes.roster")}</h2>
+          {roster.data && roster.data.length > 0 ? (
+            <table>
+              <thead>
+                <tr>
+                  <th>{t("auth.name")}</th>
+                  <th>{t("auth.email")}</th>
+                  <th>{t("bookings.col.payment")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {roster.data.map((entry, i) => (
+                  <tr key={i}>
+                    <td>
+                      {entry.name}{" "}
+                      {entry.status === "waitlisted" && (
+                        <span className="badge badge-muted">
+                          {t("bookings.status.waitlisted")}
+                        </span>
+                      )}
+                    </td>
+                    <td>{entry.email}</td>
+                    <td>
+                      {entry.payment_status === "paid" ? (
+                        <span className="badge badge-open">
+                          {t("bookings.status.paid")}
+                        </span>
+                      ) : (
+                        <span className="badge badge-muted">
+                          {t("bookings.status.pending")}
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="muted">{t("classes.rosterEmpty")}</p>
           )}
         </div>
       )}

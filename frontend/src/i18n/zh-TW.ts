@@ -85,6 +85,8 @@ export const zhTW: Record<TranslationKey, string> = {
   "classes.form.photo": "老師照片",
   "classes.form.uploading": "上傳中…",
   "classes.form.uploadFailed": "上傳失敗",
+  "classes.roster": "報名名單",
+  "classes.rosterEmpty": "還沒有人報名。",
 
   "bookings.title": "我的預約",
   "bookings.loadFailed": "載入預約失敗",
@@ -96,6 +98,7 @@ export const zhTW: Record<TranslationKey, string> = {
   "bookings.col.payment": "付款",
   "bookings.status.pending": "待付款",
   "bookings.status.paid": "已付款",
+  "bookings.status.booked": "已報名",
   "bookings.status.waitlisted": "候補中",
   "bookings.pay": "付款",
   "bookings.paying": "付款中…",
