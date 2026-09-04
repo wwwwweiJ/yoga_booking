@@ -7,6 +7,19 @@ import {
 } from "../../api/studio";
 import { useI18n } from "../../i18n";
 
+// Teachers can enter a bare handle or a full URL for their links; normalise
+// both to an absolute href.
+function instagramHref(v: string): string {
+  const s = v.trim();
+  return /^https?:\/\//i.test(s)
+    ? s
+    : `https://instagram.com/${s.replace(/^@/, "")}`;
+}
+function externalHref(v: string): string {
+  const s = v.trim();
+  return /^https?:\/\//i.test(s) ? s : `https://${s}`;
+}
+
 // The signed-out, shareable studio page — renders the blocks the teacher
 // arranged in the editor.
 export function StudioPublicPage() {
@@ -145,6 +158,74 @@ export function StudioPublicPage() {
                   </p>
                 </div>
               )}
+            </div>
+          );
+        }
+        if (block.type === "teachers") {
+          return (
+            <div key={i} style={{ marginBottom: "1.5rem" }}>
+              {block.heading && <h2>{block.heading}</h2>}
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                  gap: "1rem",
+                }}
+              >
+                {block.members.map((m, j) => (
+                  <div className="card" key={j} style={{ marginBottom: 0 }}>
+                    {m.photo && (
+                      <img
+                        src={m.photo}
+                        alt=""
+                        style={{
+                          width: "100%",
+                          height: 200,
+                          objectFit: "cover",
+                          borderRadius: 8,
+                        }}
+                      />
+                    )}
+                    <h3 style={{ marginBottom: 0 }}>{m.name}</h3>
+                    {m.title && (
+                      <p className="muted" style={{ marginTop: "0.25rem" }}>
+                        {m.title}
+                      </p>
+                    )}
+                    {m.bio && (
+                      <p style={{ whiteSpace: "pre-wrap" }}>{m.bio}</p>
+                    )}
+                    {(m.instagram || m.website) && (
+                      <p
+                        style={{
+                          display: "flex",
+                          gap: "0.75rem",
+                          marginBottom: 0,
+                        }}
+                      >
+                        {m.instagram && (
+                          <a
+                            href={instagramHref(m.instagram)}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            Instagram
+                          </a>
+                        )}
+                        {m.website && (
+                          <a
+                            href={externalHref(m.website)}
+                            target="_blank"
+                            rel="noreferrer"
+                          >
+                            {t("studio.teacher.website")}
+                          </a>
+                        )}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           );
         }

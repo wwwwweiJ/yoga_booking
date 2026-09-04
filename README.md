@@ -34,7 +34,7 @@ admin backoffice or the `user:create` task).
 
 ```
 organization (a studio) ── has many ──▶ users (member / staff / admin)
-  ├── page   (customizable blocks: hero / about / gallery)
+  ├── page   (customizable blocks: hero / about / gallery / schedule / teachers)
   └── class  (a scheduled, priced, bookable session; optional instructor photo)
         └── booking (a member's seat; payment_status pending → paid)
 ```
@@ -51,8 +51,10 @@ organization (a studio) ── has many ──▶ users (member / staff / admin)
   (unique index), can't book one at capacity, and can't book one that has
   already started. A booking starts `pending` and a mock payment flips it to
   `paid`. You only see, pay for, and cancel your own bookings.
-- **Studio page** — an ordered list of blocks (`hero` / `about` / `gallery`) a
-  teacher arranges; rendered publicly at `/studio/<token>`.
+- **Studio page** — an ordered list of blocks (`hero` / `about` / `gallery` /
+  `schedule` / `teachers`) a teacher arranges; rendered publicly at
+  `/studio/<token>`. The `teachers` block is a "meet the team" section — each
+  member has a photo, name, title, bio, and IG/website links.
 
 **Tenancy:** every request is scoped to the caller's studio. You only see and
 manage your own studio's classes, book only there, and cross-studio data is

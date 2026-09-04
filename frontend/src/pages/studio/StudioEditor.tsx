@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Block } from "../../bindings/Block";
+import type { TeacherIntro } from "../../bindings/TeacherIntro";
 import { ApiClientError } from "../../api/client";
 import {
   getMyStudioPage,
@@ -9,6 +10,15 @@ import {
 } from "../../api/studio";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { useI18n } from "../../i18n";
+
+const emptyTeacher = (): TeacherIntro => ({
+  name: "",
+  photo: null,
+  title: "",
+  bio: "",
+  instagram: "",
+  website: "",
+});
 
 function defaultBlock(type: Block["type"]): Block {
   switch (type) {
@@ -20,6 +30,8 @@ function defaultBlock(type: Block["type"]): Block {
       return { type: "gallery", images: [] };
     case "schedule":
       return { type: "schedule", heading: "" };
+    case "teachers":
+      return { type: "teachers", heading: "", members: [] };
   }
 }
 
@@ -86,6 +98,35 @@ export function StudioEditor() {
     setBlocks((bs) => bs.filter((_, idx) => idx !== i));
   const add = (type: Block["type"]) =>
     setBlocks((bs) => [...bs, defaultBlock(type)]);
+
+  // Helpers for editing the members of a `teachers` block at index `i`.
+  const setMemberField = (i: number, j: number, patch: Partial<TeacherIntro>) =>
+    setBlocks((bs) =>
+      bs.map((b, idx) =>
+        idx === i && b.type === "teachers"
+          ? {
+              ...b,
+              members: b.members.map((m, k) => (k === j ? { ...m, ...patch } : m)),
+            }
+          : b,
+      ),
+    );
+  const addMember = (i: number) =>
+    setBlocks((bs) =>
+      bs.map((b, idx) =>
+        idx === i && b.type === "teachers"
+          ? { ...b, members: [...b.members, emptyTeacher()] }
+          : b,
+      ),
+    );
+  const removeMember = (i: number, j: number) =>
+    setBlocks((bs) =>
+      bs.map((b, idx) =>
+        idx === i && b.type === "teachers"
+          ? { ...b, members: b.members.filter((_, k) => k !== j) }
+          : b,
+      ),
+    );
 
   return (
     <div>
@@ -320,6 +361,133 @@ export function StudioEditor() {
               </p>
             </>
           )}
+
+          {block.type === "teachers" && (
+            <>
+              <div>
+                <label>{t("studio.heading")}</label>
+                <input
+                  value={block.heading}
+                  onChange={(e) =>
+                    setBlock(i, { ...block, heading: e.target.value })
+                  }
+                />
+              </div>
+              {block.members.map((m, j) => (
+                <div key={j} className="card" style={{ marginTop: "0.5rem" }}>
+                  <div
+                    className="page-header"
+                    style={{ marginBottom: "0.5rem" }}
+                  >
+                    <strong>{m.name || t("studio.teacher.new")}</strong>
+                    <button
+                      type="button"
+                      className="btn-danger"
+                      onClick={() => removeMember(i, j)}
+                    >
+                      {t("studio.remove")}
+                    </button>
+                  </div>
+                  {m.photo && (
+                    <div style={{ margin: "0.5rem 0" }}>
+                      <img src={m.photo} alt="" className="instructor-photo" />
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "0.5rem",
+                      marginBottom: "0.5rem",
+                    }}
+                  >
+                    <label className="btn btn-secondary" style={{ margin: 0 }}>
+                      {t("studio.teacher.photo")}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            const { url } = await uploadStudioImage(file);
+                            setMemberField(i, j, { photo: url });
+                          } catch {
+                            setStatus(t("studio.uploadFailed"));
+                          }
+                        }}
+                      />
+                    </label>
+                    {m.photo && (
+                      <button
+                        type="button"
+                        className="btn-danger"
+                        onClick={() => setMemberField(i, j, { photo: null })}
+                      >
+                        {t("studio.removeImage")}
+                      </button>
+                    )}
+                  </div>
+                  <div>
+                    <label>{t("studio.teacher.name")}</label>
+                    <input
+                      value={m.name}
+                      onChange={(e) =>
+                        setMemberField(i, j, { name: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>{t("studio.teacher.title")}</label>
+                    <input
+                      value={m.title}
+                      onChange={(e) =>
+                        setMemberField(i, j, { title: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>{t("studio.teacher.bio")}</label>
+                    <textarea
+                      rows={3}
+                      value={m.bio}
+                      onChange={(e) =>
+                        setMemberField(i, j, { bio: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>{t("studio.teacher.instagram")}</label>
+                    <input
+                      value={m.instagram}
+                      placeholder="@handle"
+                      onChange={(e) =>
+                        setMemberField(i, j, { instagram: e.target.value })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label>{t("studio.teacher.website")}</label>
+                    <input
+                      value={m.website}
+                      placeholder="https://…"
+                      onChange={(e) =>
+                        setMemberField(i, j, { website: e.target.value })
+                      }
+                    />
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ marginTop: "0.5rem" }}
+                onClick={() => addMember(i)}
+              >
+                {t("studio.teacher.add")}
+              </button>
+            </>
+          )}
         </div>
       ))}
 
@@ -347,6 +515,13 @@ export function StudioEditor() {
           onClick={() => add("schedule")}
         >
           {t("studio.addSchedule")}
+        </button>
+        <button
+          type="button"
+          className="btn-secondary"
+          onClick={() => add("teachers")}
+        >
+          {t("studio.addTeachers")}
         </button>
       </div>
 

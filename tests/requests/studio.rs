@@ -50,6 +50,43 @@ async fn staff_sets_line_settings_and_only_liff_id_is_public() {
 
 #[tokio::test]
 #[serial]
+async fn teachers_block_round_trips_to_the_public_page() {
+    request::<App, _, _>(|request, ctx| async move {
+        let user = prepare_data::init_user_login(&request, &ctx).await;
+
+        let (k, v) = prepare_data::auth_header(&user.token);
+        let put = request
+            .put("/api/studio/page")
+            .add_header(k, v)
+            .json(&serde_json::json!({
+                "blocks": [
+                    { "type": "teachers", "heading": "Our teachers", "members": [
+                        {
+                            "name": "Mei", "photo": "/m.jpg", "title": "Yin yoga",
+                            "bio": "10 years", "instagram": "@mei", "website": "mei.com"
+                        }
+                    ]}
+                ]
+            }))
+            .await;
+        assert_eq!(put.status_code(), 200);
+
+        let page: Value = request
+            .get(&format!(
+                "/api/public/organizations/{}/page",
+                user.organization_public_id
+            ))
+            .await
+            .json();
+        assert_eq!(page["blocks"][0]["type"], "teachers");
+        assert_eq!(page["blocks"][0]["members"][0]["name"], "Mei");
+        assert_eq!(page["blocks"][0]["members"][0]["title"], "Yin yoga");
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn staff_can_edit_and_public_can_read_the_page() {
     request::<App, _, _>(|request, ctx| async move {
         let user = prepare_data::init_user_login(&request, &ctx).await;

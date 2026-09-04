@@ -25,6 +25,32 @@ pub enum Block {
     Schedule {
         heading: String,
     },
+    /// A "meet the teachers" section: each member has a photo + bio.
+    Teachers {
+        heading: String,
+        members: Vec<TeacherIntro>,
+    },
+}
+
+/// One teacher shown in a `Teachers` block. Everything but the name is optional
+/// (blank when unset), and every field has `#[serde(default)]` so partial
+/// entries and older stored blocks deserialize cleanly.
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../frontend/src/bindings/")]
+pub struct TeacherIntro {
+    pub name: String,
+    /// Uploaded photo URL (via `/api/studio/uploads`).
+    #[serde(default)]
+    pub photo: Option<String>,
+    /// Speciality or title, e.g. "陰瑜伽 · 10 年經驗".
+    #[serde(default)]
+    pub title: String,
+    #[serde(default)]
+    pub bio: String,
+    #[serde(default)]
+    pub instagram: String,
+    #[serde(default)]
+    pub website: String,
 }
 
 /// A studio's page: its name plus the ordered blocks that render it.
