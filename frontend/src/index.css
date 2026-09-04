@@ -106,6 +106,7 @@ h2 {
   color: var(--muted);
   font-size: 0.92rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 .nav-link:hover {
   color: var(--text);
@@ -144,6 +145,34 @@ h2 {
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1.5rem 4rem;
+}
+
+/* ------------------------------ Responsive ------------------------------- */
+
+/* On phones the nav can't fit brand + links in one row, so stack them: the
+   brand takes the first row, the links wrap across the row(s) below. */
+@media (max-width: 680px) {
+  .app-nav {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+  }
+  .app-nav .brand {
+    flex-basis: 100%;
+    font-size: 0.95rem;
+  }
+  .app-nav .nav-links {
+    margin-left: 0;
+    flex-basis: 100%;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .container {
+    padding: 1.5rem 1rem 3rem;
+  }
+  .page-header {
+    gap: 0.75rem;
+  }
 }
 
 .page-header {
@@ -191,11 +220,16 @@ thead th {
   color: var(--muted);
   font-weight: 600;
   padding: 0 0.75rem 0.6rem;
+  white-space: nowrap;
 }
 tbody td {
   padding: 0.8rem 0.75rem;
   border-top: 1px solid var(--border);
   vertical-align: middle;
+  /* Keep cell text on one line; `.table-wrap` scrolls a wide table on small
+     screens instead of letting CJK text break one character per line. Cells
+     that must wrap (e.g. a long URL) opt in with `.break-anywhere`. */
+  white-space: nowrap;
 }
 tbody tr:hover td {
   background: var(--surface-2);
