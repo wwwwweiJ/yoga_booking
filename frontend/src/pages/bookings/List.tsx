@@ -66,7 +66,7 @@ export function BookingsList() {
           {t("bookings.empty")} <Link to="/classes">{t("bookings.browse")}</Link>
         </div>
       ) : (
-        <div className="card">
+        <div className="card table-wrap">
         <table>
           <thead>
             <tr>

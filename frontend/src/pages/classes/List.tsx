@@ -86,7 +86,7 @@ export function ClassesList() {
       {data.items.length === 0 ? (
         <div className="card empty">{t("classes.empty")}</div>
       ) : (
-        <div className="card">
+        <div className="card table-wrap">
           <table>
             <thead>
               <tr>

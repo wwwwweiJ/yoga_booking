@@ -247,6 +247,7 @@ export function ClassForm() {
         <div style={{ marginTop: "1.5rem" }}>
           <h2>{t("classes.roster")}</h2>
           {roster.data && roster.data.length > 0 ? (
+            <div className="table-wrap">
             <table>
               <thead>
                 <tr>
@@ -282,6 +283,7 @@ export function ClassForm() {
                 ))}
               </tbody>
             </table>
+            </div>
           ) : (
             <p className="muted">{t("classes.rosterEmpty")}</p>
           )}

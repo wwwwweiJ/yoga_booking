@@ -106,26 +106,30 @@ export function Admin() {
       <div className="card" style={{ marginBottom: "1.5rem" }}>
         <h2>{t("admin.studios")}</h2>
         {orgs.data && orgs.data.length > 0 && (
-          <table>
-            <thead>
-              <tr>
-                <th>{t("studio.name")}</th>
-                <th>{t("studio.timezone")}</th>
-                <th>{t("admin.registerLink")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orgs.data.map((org) => (
-                <tr key={org.id}>
-                  <td>{org.name}</td>
-                  <td>{org.timezone}</td>
-                  <td>
-                    <code>{`${origin}/register/${org.public_id}`}</code>
-                  </td>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>{t("studio.name")}</th>
+                  <th>{t("studio.timezone")}</th>
+                  <th>{t("admin.registerLink")}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {orgs.data.map((org) => (
+                  <tr key={org.id}>
+                    <td>{org.name}</td>
+                    <td>{org.timezone}</td>
+                    <td>
+                      <code className="break-anywhere">
+                        {`${origin}/register/${org.public_id}`}
+                      </code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
 
         <form
@@ -258,7 +262,8 @@ export function Admin() {
 
         {usersOrg !== "" &&
           (members.data && members.data.length > 0 ? (
-            <table style={{ marginTop: "1rem" }}>
+            <div className="table-wrap" style={{ marginTop: "1rem" }}>
+              <table>
               <thead>
                 <tr>
                   <th>{t("auth.name")}</th>
@@ -303,7 +308,8 @@ export function Admin() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+              </table>
+            </div>
           ) : (
             <p className="muted" style={{ marginTop: "1rem" }}>
               {t("admin.noMembers")}

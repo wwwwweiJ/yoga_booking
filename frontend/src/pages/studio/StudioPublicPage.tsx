@@ -113,7 +113,8 @@ export function StudioPublicPage() {
                 <p className="muted">{t("studio.noUpcoming")}</p>
               ) : (
                 <div className="card">
-                  <table>
+                  <div className="table-wrap">
+                    <table>
                     <tbody>
                       {list.map((klass, k) => (
                         <tr key={k}>
@@ -151,6 +152,7 @@ export function StudioPublicPage() {
                       ))}
                     </tbody>
                   </table>
+                  </div>
                   <p style={{ marginBottom: 0, marginTop: "1rem" }}>
                     <Link className="btn" to={`/register/${token}`}>
                       {t("studio.registerToBook")}

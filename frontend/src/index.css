@@ -206,6 +206,20 @@ th:last-child {
   white-space: nowrap;
 }
 
+/* Wrap a table in `.table-wrap` so it scrolls horizontally inside its card on
+   narrow screens instead of overflowing the page. */
+.table-wrap {
+  overflow-x: auto;
+}
+
+/* Long unbreakable strings (URLs, tokens) must wrap rather than force a table
+   wider than its container. Overrides the last-column `nowrap` above. */
+.break-anywhere {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* ------------------------------ Buttons ---------------------------------- */
 
 button,
