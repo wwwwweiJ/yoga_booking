@@ -328,9 +328,7 @@ impl Model {
         line_user_id: &str,
         name: &str,
     ) -> ModelResult<Self> {
-        if let Some(user) =
-            Self::find_by_line_user_id(db, organization_id, line_user_id).await?
-        {
+        if let Some(user) = Self::find_by_line_user_id(db, organization_id, line_user_id).await? {
             return Ok(user);
         }
 
@@ -355,10 +353,12 @@ impl Model {
             // Two concurrent first-logins for the same LINE account race here;
             // the partial unique index rejects the loser. If the row now exists,
             // return it — the caller just wanted to be logged in.
-            Err(err) => match Self::find_by_line_user_id(db, organization_id, line_user_id).await? {
-                Some(user) => Ok(user),
-                None => Err(err.into()),
-            },
+            Err(err) => {
+                match Self::find_by_line_user_id(db, organization_id, line_user_id).await? {
+                    Some(user) => Ok(user),
+                    None => Err(err.into()),
+                }
+            }
         }
     }
 

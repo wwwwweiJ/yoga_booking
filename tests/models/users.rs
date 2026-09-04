@@ -331,10 +331,9 @@ async fn can_create_with_line() {
 
     let organization_id = seed_org(&boot.app_context.db).await;
 
-    let user =
-        Model::create_with_line(&boot.app_context.db, organization_id, "Uline123", "陳同學")
-            .await
-            .expect("a LINE user should be created");
+    let user = Model::create_with_line(&boot.app_context.db, organization_id, "Uline123", "陳同學")
+        .await
+        .expect("a LINE user should be created");
 
     assert_eq!(user.line_user_id.as_deref(), Some("Uline123"));
     assert_eq!(user.organization_id, organization_id);

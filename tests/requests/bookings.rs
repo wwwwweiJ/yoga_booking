@@ -120,12 +120,9 @@ async fn member_cannot_see_the_roster() {
     request::<App, _, _>(|request, ctx| async move {
         let owner = prepare_data::init_user_login(&request, &ctx).await;
         let class_id = seed_class(&request, &owner.token, 20).await;
-        let member = prepare_data::register_and_login(
-            &request,
-            "m@loco.com",
-            &owner.organization_public_id,
-        )
-        .await;
+        let member =
+            prepare_data::register_and_login(&request, "m@loco.com", &owner.organization_public_id)
+                .await;
 
         let (auth_key, auth_value) = prepare_data::auth_header(&member.token);
         let response = request
@@ -181,7 +178,11 @@ async fn cannot_pay_for_someone_elses_booking() {
             .add_header(auth_key, auth_value)
             .await;
 
-        assert_eq!(response.status_code(), 404, "you can't pay another's booking");
+        assert_eq!(
+            response.status_code(),
+            404,
+            "you can't pay another's booking"
+        );
     })
     .await;
 }
@@ -202,7 +203,11 @@ async fn booking_reduces_spots_left() {
             .add_header(auth_key, auth_value)
             .await
             .json();
-        assert_eq!(class["spots_left"].as_i64(), Some(2), "3 capacity - 1 booked");
+        assert_eq!(
+            class["spots_left"].as_i64(),
+            Some(2),
+            "3 capacity - 1 booked"
+        );
     })
     .await;
 }
@@ -257,8 +262,14 @@ async fn double_booking_returns_409() {
         let user = prepare_data::init_user_login(&request, &ctx).await;
         let class_id = seed_class(&request, &user.token, 20).await;
 
-        assert_eq!(book(&request, &user.token, class_id).await.status_code(), 201);
-        assert_eq!(book(&request, &user.token, class_id).await.status_code(), 409);
+        assert_eq!(
+            book(&request, &user.token, class_id).await.status_code(),
+            201
+        );
+        assert_eq!(
+            book(&request, &user.token, class_id).await.status_code(),
+            409
+        );
     })
     .await;
 }
@@ -269,7 +280,10 @@ async fn full_class_waitlists() {
     request::<App, _, _>(|request, ctx| async move {
         let owner = prepare_data::init_user_login(&request, &ctx).await;
         let class_id = seed_class(&request, &owner.token, 1).await;
-        assert_eq!(book(&request, &owner.token, class_id).await.status_code(), 201);
+        assert_eq!(
+            book(&request, &owner.token, class_id).await.status_code(),
+            201
+        );
 
         // A second member of the SAME studio joins the waitlist instead.
         let other = prepare_data::register_and_login(
@@ -280,7 +294,11 @@ async fn full_class_waitlists() {
         .await;
         let response = book(&request, &other.token, class_id).await;
 
-        assert_eq!(response.status_code(), 201, "a full class waitlists, not rejects");
+        assert_eq!(
+            response.status_code(),
+            201,
+            "a full class waitlists, not rejects"
+        );
         let body: Value = response.json();
         assert_eq!(body["status"], "waitlisted");
     })
@@ -365,7 +383,10 @@ async fn can_cancel_own_booking() {
         assert_eq!(response.status_code(), 204);
 
         // cancelling frees the seat, so the class can be booked again
-        assert_eq!(book(&request, &user.token, class_id).await.status_code(), 201);
+        assert_eq!(
+            book(&request, &user.token, class_id).await.status_code(),
+            201
+        );
     })
     .await;
 }

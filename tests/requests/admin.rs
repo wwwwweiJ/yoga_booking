@@ -18,7 +18,11 @@ async fn non_admin_cannot_reach_backoffice() {
             .add_header(auth_key, auth_value)
             .await;
 
-        assert_eq!(response.status_code(), 403, "only admins reach the backoffice");
+        assert_eq!(
+            response.status_code(),
+            403,
+            "only admins reach the backoffice"
+        );
     })
     .await;
 }

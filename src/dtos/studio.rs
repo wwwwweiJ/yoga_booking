@@ -15,10 +15,16 @@ pub enum Block {
         #[serde(default)]
         image: Option<String>,
     },
-    About { text: String },
-    Gallery { images: Vec<String> },
+    About {
+        text: String,
+    },
+    Gallery {
+        images: Vec<String>,
+    },
     /// Renders the studio's upcoming classes on the public page.
-    Schedule { heading: String },
+    Schedule {
+        heading: String,
+    },
 }
 
 /// A studio's page: its name plus the ordered blocks that render it.

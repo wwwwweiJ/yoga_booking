@@ -60,7 +60,11 @@ async fn member_cannot_edit_the_page() {
             .json(&serde_json::json!({ "blocks": [] }))
             .await;
 
-        assert_eq!(put.status_code(), 403, "students can't edit the studio page");
+        assert_eq!(
+            put.status_code(),
+            403,
+            "students can't edit the studio page"
+        );
     })
     .await;
 }

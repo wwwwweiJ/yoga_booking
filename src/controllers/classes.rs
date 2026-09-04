@@ -78,8 +78,7 @@ async fn list(
     Query(params): Query<ListParams>,
 ) -> Result<Response> {
     let org_id = current_org_id(&auth, &ctx).await?;
-    let mut select =
-        classes::Entity::find().filter(classes::Column::OrganizationId.eq(org_id));
+    let mut select = classes::Entity::find().filter(classes::Column::OrganizationId.eq(org_id));
     if params.scope.as_deref() != Some("all") {
         select = select.filter(classes::Column::StartsAt.gte(chrono::Utc::now().fixed_offset()));
     }
@@ -181,7 +180,13 @@ async fn remove(
 }
 
 fn content_type_for(key: &str) -> &'static str {
-    match key.rsplit('.').next().unwrap_or("").to_ascii_lowercase().as_str() {
+    match key
+        .rsplit('.')
+        .next()
+        .unwrap_or("")
+        .to_ascii_lowercase()
+        .as_str()
+    {
         "png" => "image/png",
         "jpg" | "jpeg" => "image/jpeg",
         "gif" => "image/gif",

@@ -26,7 +26,11 @@ async fn create_class(request: &TestServer, token: &str) -> Value {
             "price": 500,
         }))
         .await;
-    assert_eq!(response.status_code(), 201, "class create should return 201");
+    assert_eq!(
+        response.status_code(),
+        201,
+        "class create should return 201"
+    );
     response.json()
 }
 
@@ -37,9 +41,7 @@ async fn seed_class_in_org(ctx: &loco_rs::app::AppContext, org_id: i64) -> i64 {
         organization_id: ActiveValue::set(org_id),
         title: ActiveValue::set("Other Studio Class".to_string()),
         instructor: ActiveValue::set("Someone".to_string()),
-        starts_at: ActiveValue::set(
-            chrono::DateTime::parse_from_rfc3339(STARTS_AT).unwrap(),
-        ),
+        starts_at: ActiveValue::set(chrono::DateTime::parse_from_rfc3339(STARTS_AT).unwrap()),
         duration_minutes: ActiveValue::set(60),
         capacity: ActiveValue::set(20),
         ..Default::default()
@@ -313,9 +315,12 @@ async fn member_cannot_upload_photo() {
         let created = create_class(&request, &teacher.token).await;
         let id = created["id"].as_i64().unwrap();
 
-        let student =
-            prepare_data::register_and_login(&request, "student@loco.com", &teacher.organization_public_id)
-                .await;
+        let student = prepare_data::register_and_login(
+            &request,
+            "student@loco.com",
+            &teacher.organization_public_id,
+        )
+        .await;
         let (auth_key, auth_value) = prepare_data::auth_header(&student.token);
         let form = MultipartForm::new().add_part(
             "photo",

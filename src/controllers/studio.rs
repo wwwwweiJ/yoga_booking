@@ -41,8 +41,7 @@ async fn update_page(
     Json(params): Json<UpdatePageParams>,
 ) -> Result<Response> {
     let org = require_staff_org(&auth, &ctx).await?;
-    let value =
-        serde_json::to_value(&params.blocks).map_err(|e| Error::string(&e.to_string()))?;
+    let value = serde_json::to_value(&params.blocks).map_err(|e| Error::string(&e.to_string()))?;
     let mut active = org.into_active_model();
     active.page = ActiveValue::set(Some(value));
     let org = active.update(&ctx.db).await?;
