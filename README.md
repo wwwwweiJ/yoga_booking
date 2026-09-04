@@ -70,8 +70,7 @@ Everything requires a JWT (`Authorization: Bearer <token>`) except the
 | `POST` | `/api/auth/login` | returns a JWT |
 | `POST` | `/api/auth/line` | **public** — LINE (LIFF) login into a studio (`{ id_token, organization_token }`) |
 | `GET` | `/api/auth/current` | the caller (incl. `role`) |
-| `GET` | `/api/public/config` | **public** — runtime `{ liff_id }` for the SPA |
-| `GET` | `/api/public/organizations/{token}` | **public** — a studio's `{ name }` |
+| `GET` | `/api/public/organizations/{token}` | **public** — a studio's `{ name, liff_id }` |
 | `GET` | `/api/public/organizations/{token}/page` | **public** — a studio's page (name + blocks) |
 | `GET` | `/api/organizations` · `/api/organizations/{id}` | your studio only |
 | `GET/POST` | `/api/classes` | list your studio's / create (staff) |
@@ -82,6 +81,7 @@ Everything requires a JWT (`Authorization: Bearer <token>`) except the
 | `POST` | `/api/bookings/{id}/pay` | mock payment → `paid` |
 | `DELETE` | `/api/bookings/{id}` | cancel my booking |
 | `GET/PUT` | `/api/studio/page` | my studio's page (staff) |
+| `GET/PUT` | `/api/studio/line` | my studio's LINE login settings — liff_id + channel_id (staff) |
 | `GET/POST` | `/api/admin/organizations` | admin — list / create studios |
 | `POST` | `/api/admin/staff` | admin — create a teacher for a studio |
 | `GET` | `/api/admin/users` | admin — a studio's users (`?organization_id=`) |
@@ -127,15 +127,17 @@ Teachers open classes, set prices, upload photos, and arrange their studio page
 (`/studio/edit`); students register via a studio's `/register/<token>` link,
 book classes, and pay. A studio's public page lives at `/studio/<token>`.
 
-### LINE login (optional)
+### LINE login (optional, per-studio)
 
-Students and teachers can sign in with **LINE** instead of email/password: a
-studio page shows a "Book with LINE" button (`/liff?studio=<token>`) that runs
-the LIFF flow, verifies the LINE id token server-side, and finds-or-creates the
-user in that studio (as a `member`). Teachers sign in the same way, then an
-admin promotes them under **/admin → Members**. Enable it by setting
-`LINE_CHANNEL_ID` + `LINE_LIFF_ID` — see [DEPLOY.md](DEPLOY.md) Step 5 for the
-LINE Developers console setup. Unset, the feature is simply hidden.
+Students and teachers can sign in with **LINE** instead of email/password.
+It's **per-studio**: each studio uses its own LINE Login channel + LIFF app,
+configured by that studio's staff under **My Studio → LINE login** (stored on
+`organizations.line_liff_id` / `line_channel_id`, no env vars or redeploy). Once
+set, the studio page shows a "Book with LINE" button (`/liff?studio=<token>`)
+that runs the LIFF flow; the backend verifies the LINE id token against **that
+studio's** channel and finds-or-creates the user in it (as a `member`). Teachers
+sign in the same way, then an admin promotes them under **/admin → Members**.
+See [DEPLOY.md](DEPLOY.md) Step 5 for the LINE Developers console setup.
 
 ## Testing
 

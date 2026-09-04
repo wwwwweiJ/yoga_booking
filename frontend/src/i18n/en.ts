@@ -140,6 +140,12 @@ export const en = {
   "studio.scheduleHint": "Shows your upcoming classes on the public page.",
   "studio.registerToBook": "Register to book",
   "studio.bookWithLine": "Book with LINE",
+  "studio.line.title": "LINE login",
+  "studio.line.hint":
+    "Let students sign in with your studio's LINE. Create a LINE Login channel + LIFF app (endpoint …/liff, scopes openid + profile) and paste the IDs here. Leave blank to disable.",
+  "studio.line.liffId": "LIFF ID",
+  "studio.line.channelId": "Channel ID",
+  "studio.line.save": "Save LINE settings",
   "studio.noUpcoming": "No upcoming classes.",
   "studio.heading": "Heading",
   "studio.subheading": "Subheading",

@@ -140,6 +140,12 @@ export const zhTW: Record<TranslationKey, string> = {
   "studio.scheduleHint": "在公開頁顯示你即將開的課。",
   "studio.registerToBook": "註冊即可預約",
   "studio.bookWithLine": "用 LINE 預約",
+  "studio.line.title": "LINE 登入設定",
+  "studio.line.hint":
+    "讓學生用你工作室的 LINE 登入預約。到 LINE Developers 建 LINE Login channel + LIFF app(Endpoint 填 …/liff、Scopes 勾 openid + profile),把 ID 貼進來。留空即停用。",
+  "studio.line.liffId": "LIFF ID",
+  "studio.line.channelId": "Channel ID",
+  "studio.line.save": "儲存 LINE 設定",
   "studio.noUpcoming": "目前沒有即將開的課。",
   "studio.heading": "標題",
   "studio.subheading": "副標題",

@@ -104,34 +104,26 @@ cargo loco task user:create \
 
 ---
 
-## Step 5 — LINE 登入(選用)
+## Step 5 — LINE 登入(選用,**每間店各自設定**)
 
-讓學生和老師用 **LINE** 登入預約(在 LINE 裡點連結就自動用 LINE 身分進來,不用 email 密碼)。沒設定這步的話,一切照舊用 email/密碼,不受影響。
+讓學生和老師用 **LINE** 登入預約。**每間工作室用自己的 LINE 官方帳號**,在自己的設定頁填 —— 不是全站共用、也不用碰環境變數 / 重部署。沒設的店就照舊用 email/密碼。
 
-**① 在 LINE Developers 建 channel**
-1. 開 <https://developers.line.biz/console/> → 建一個 **Provider**(沒有的話)。
-2. **Create channel → LINE Login**(不是 Messaging API)。
-3. **Basic settings** → 複製 **Channel ID**(一串數字)。
+**① 這間店在 LINE Developers 建 channel + LIFF**(每間店做一次)
+1. 開 <https://developers.line.biz/console/> → 建 **Provider**(沒有的話)。
+2. **Create channel → LINE Login**(不是 Messaging API)→ **Basic settings** 複製 **Channel ID**(數字)。
+3. 該 channel 的 **LIFF** 分頁 → **Add** → Endpoint URL 填 `https://<你的網域>/liff`、Size `Full`、Scopes 勾 **`openid` + `profile`** → 複製 **LIFF ID**(像 `1234567890-abcdEFGH`)。
 
-**② 加一個 LIFF app**
-- 在該 channel 的 **LIFF** 分頁 → **Add**。
-- **Endpoint URL** 填 `https://<你的網域>/liff`(你部署後的網址,例如 `https://xxx.onrender.com/liff`)。
-- **Size** 選 `Full`;**Scopes** 勾 **`openid`** 和 **`profile`**(`email` 不用勾)。
-- 複製它的 **LIFF ID**(長得像 `1234567890-abcdEFGH`)。
+**② 填進工作室設定**
+- 用**這間店的老師帳號**登入 → **我的工作室(My Studio)** → **LINE 登入設定**。
+- 貼上 **LIFF ID** + **Channel ID** → 儲存。就這樣,不用重部署。
+- (後端存進 `organizations.line_liff_id` / `line_channel_id`;`LIFF ID` 會經由公開的 `/api/public/organizations/{token}` 給前端,**Channel ID 不會外流**。)
 
-**③ 設兩個環境變數**(設在你部署服務的環境變數,跟 `DATABASE_URL` 放同一處)
-```
-LINE_CHANNEL_ID = 上面的 Channel ID(數字)
-LINE_LIFF_ID    = 上面的 LIFF ID
-```
-存檔後重新部署。後端用 `LINE_CHANNEL_ID` 向 LINE 驗證登入,前端向 `/api/public/config` 取 `LINE_LIFF_ID`(所以改這兩個值不用重 build image)。
+**③ 怎麼用**
+- 設好後,這間店的公開頁 `/studio/<public_id>` 才會出現 **「用 LINE 預約」** 按鈕(沒設就不顯示)。
+- 貼給學生 / 放 LINE 官方帳號選單的連結:`https://liff.line.me/<這間店的LIFF_ID>?studio=<這間店的public_id>`。
+- **老師也走 LINE**:老師先用 LINE 登入(預設是學生),再由管理員到 **/admin → 工作室成員** 把他 **設為老師**。
 
-**④ 怎麼用**
-- 每間店的公開頁 `/studio/<public_id>` 會出現 **「用 LINE 預約」** 按鈕。
-- 要放進 LINE 官方帳號選單 / 貼給學生的連結格式:`https://liff.line.me/<LIFF_ID>?studio=<public_id>`(`studio` 帶哪間店的 `public_id`,就把人加進哪間店)。
-- **老師也走 LINE**:老師先用 LINE 登入(預設是學生身分),再由管理員到 **/admin → 工作室成員** 把他 **設為老師**。
-
-> LINE 使用者沒有 email/密碼(系統內部用一組佔位 email),所以他們不能用 email 登入或忘記密碼 —— 一律走 LINE。同一個人加入不同工作室會是不同帳號,跟 email 註冊的規則一致。
+> LINE 使用者沒有 email/密碼(系統內部用一組佔位 email),所以不能用 email 登入或忘記密碼 —— 一律走 LINE。同一個人加入不同工作室是不同帳號,跟 email 註冊規則一致。
 
 ---
 

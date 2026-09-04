@@ -16,6 +16,8 @@ pub struct Model {
     pub public_id: Uuid,
     #[sea_orm(column_type = "JsonBinary", nullable)]
     pub page: Option<Json>,
+    pub line_liff_id: Option<String>,
+    pub line_channel_id: Option<String>,
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]

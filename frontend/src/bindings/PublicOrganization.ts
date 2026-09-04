@@ -6,4 +6,10 @@
  * id never leaves the server (registration uses the URL token), and no
  * timezone/timestamps/member/class data leaks.
  */
-export type PublicOrganization = { name: string, };
+export type PublicOrganization = { name: string, 
+/**
+ * The studio's LINE LIFF id if it has enabled LINE login, else an empty
+ * string. Public because the LIFF client needs it to initialise; the
+ * Channel ID (used server-side to verify tokens) is never exposed here.
+ */
+liff_id: string, };

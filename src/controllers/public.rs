@@ -117,20 +117,9 @@ async fn serve_upload(Path(name): Path<String>, State(ctx): State<AppContext>) -
         .body(Body::from(data))?)
 }
 
-/// Runtime config the SPA reads at boot. Currently just the LINE LIFF id, held
-/// in the environment so it can be set/changed without rebuilding the frontend
-/// bundle. Empty when LINE login isn't configured — the frontend then hides the
-/// LINE button rather than initialising LIFF with a blank id.
-#[debug_handler]
-async fn get_config() -> Result<Response> {
-    let liff_id = std::env::var("LINE_LIFF_ID").unwrap_or_default();
-    format::json(serde_json::json!({ "liff_id": liff_id }))
-}
-
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("/api/public")
-        .add("/config", get(get_config))
         .add("/organizations/{token}", get(get_organization))
         .add("/organizations/{token}/page", get(get_page))
         .add("/organizations/{token}/classes", get(get_classes))

@@ -1,10 +1,21 @@
 import type { Block } from "../bindings/Block";
 import type { PublicClass } from "../bindings/PublicClass";
+import type { StudioLineSettings } from "../bindings/StudioLineSettings";
 import type { StudioPage } from "../bindings/StudioPage";
 import type { UpdatePageParams } from "../bindings/UpdatePageParams";
 import type { UploadedFile } from "../bindings/UploadedFile";
 import { getToken } from "../auth/token";
 import { ApiClientError, get, put } from "./client";
+
+export function getStudioLine(): Promise<StudioLineSettings> {
+  return get<StudioLineSettings>("/api/studio/line");
+}
+
+export function updateStudioLine(
+  body: StudioLineSettings,
+): Promise<StudioLineSettings> {
+  return put<StudioLineSettings>("/api/studio/line", body);
+}
 
 export function getMyStudioPage(): Promise<StudioPage> {
   return get<StudioPage>("/api/studio/page");

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
+import { getPublicOrganization } from "../../api/public";
 import {
   getPublicStudioClasses,
   getPublicStudioPage,
@@ -26,6 +27,14 @@ export function StudioPublicPage() {
     enabled: token !== undefined,
   });
 
+  // Carries the studio's LIFF id — present only if this studio enabled LINE
+  // login, which gates the "Book with LINE" button.
+  const org = useQuery({
+    queryKey: ["public-organization", token],
+    queryFn: () => getPublicOrganization(token as string),
+    enabled: token !== undefined,
+  });
+
   if (q.isPending) {
     return <p>{t("common.loading")}</p>;
   }
@@ -38,7 +47,7 @@ export function StudioPublicPage() {
   return (
     <div>
       <h1>{name}</h1>
-      {token && (
+      {token && org.data?.liff_id && (
         <p style={{ marginBottom: "1rem" }}>
           <Link className="btn" to={`/liff?studio=${token}`}>
             {t("studio.bookWithLine")}

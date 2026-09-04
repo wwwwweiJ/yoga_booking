@@ -50,6 +50,17 @@ pub struct UploadedFile {
     pub url: String,
 }
 
+/// A studio's LINE login settings, shown/edited by the studio's own staff
+/// (also the PUT body). Both empty when LINE isn't set up. Unlike the public
+/// studio payload, this includes the Channel ID — it is only ever returned to
+/// the studio's own authenticated staff.
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../frontend/src/bindings/")]
+pub struct StudioLineSettings {
+    pub liff_id: String,
+    pub channel_id: String,
+}
+
 /// The stored column may be null (no page yet) or — defensively — unreadable;
 /// either way, treat it as an empty page.
 #[must_use]

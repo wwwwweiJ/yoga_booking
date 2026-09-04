@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import liff from "@line/liff";
-import { getPublicConfig } from "../api/config";
+import { getPublicOrganization } from "../api/public";
 import { lineLogin } from "../api/line";
 import { useI18n } from "../i18n";
 import { setToken } from "./token";
@@ -35,9 +35,10 @@ export function LiffLogin() {
         return;
       }
 
+      // The LIFF id is per-studio: fetch it for the studio being joined.
       let liffId: string;
       try {
-        liffId = (await getPublicConfig()).liff_id;
+        liffId = (await getPublicOrganization(studio)).liff_id;
       } catch {
         setError(t("auth.line.failed"));
         return;

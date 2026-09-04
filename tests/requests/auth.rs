@@ -88,6 +88,27 @@ async fn line_login_unknown_studio_is_400() {
     .await;
 }
 
+#[tokio::test]
+#[serial]
+async fn line_login_studio_without_channel_is_400() {
+    request::<App, _, _>(|request, ctx| async move {
+        // A real studio, but one that hasn't set up its LINE channel yet.
+        let org = prepare_data::seed_organization(&ctx, "No LINE Studio", "Asia/Taipei").await;
+        let payload = serde_json::json!({
+            "id_token": "irrelevant",
+            "organization_token": org.public_id,
+        });
+
+        let response = request.post("/api/auth/line").json(&payload).await;
+        assert_eq!(
+            response.status_code(),
+            400,
+            "a studio with no LINE channel configured rejects LINE login"
+        );
+    })
+    .await;
+}
+
 #[rstest]
 #[case("login_with_valid_password", "12341234")]
 #[case("login_with_invalid_password", "invalid-password")]

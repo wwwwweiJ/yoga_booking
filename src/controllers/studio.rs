@@ -6,7 +6,9 @@ use loco_rs::prelude::*;
 use std::path::Path as StdPath;
 
 use crate::{
-    dtos::studio::{blocks_from_value, StudioPage, UpdatePageParams, UploadedFile},
+    dtos::studio::{
+        blocks_from_value, StudioLineSettings, StudioPage, UpdatePageParams, UploadedFile,
+    },
     models::_entities::{organizations, users},
 };
 
@@ -103,10 +105,46 @@ async fn upload_image(
     })
 }
 
+/// The studio's own LINE login settings (teacher-only). Empty strings when
+/// unset. Includes the Channel ID — only ever returned to the studio's staff.
+#[debug_handler]
+async fn get_line(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Response> {
+    let org = require_staff_org(&auth, &ctx).await?;
+    format::json(StudioLineSettings {
+        liff_id: org.line_liff_id.unwrap_or_default(),
+        channel_id: org.line_channel_id.unwrap_or_default(),
+    })
+}
+
+/// Set the studio's LINE LIFF id + Channel ID. Blank values clear the setting
+/// (stored as NULL), so "LINE enabled" is simply "these are present".
+#[debug_handler]
+async fn update_line(
+    auth: auth::JWT,
+    State(ctx): State<AppContext>,
+    Json(params): Json<StudioLineSettings>,
+) -> Result<Response> {
+    let org = require_staff_org(&auth, &ctx).await?;
+    let normalize = |s: String| {
+        let trimmed = s.trim().to_string();
+        (!trimmed.is_empty()).then_some(trimmed)
+    };
+    let mut active = org.into_active_model();
+    active.line_liff_id = ActiveValue::set(normalize(params.liff_id));
+    active.line_channel_id = ActiveValue::set(normalize(params.channel_id));
+    let org = active.update(&ctx.db).await?;
+    format::json(StudioLineSettings {
+        liff_id: org.line_liff_id.unwrap_or_default(),
+        channel_id: org.line_channel_id.unwrap_or_default(),
+    })
+}
+
 pub fn routes() -> Routes {
     Routes::new()
         .prefix("/api/studio")
         .add("/page", get(get_page))
         .add("/page", put(update_page))
+        .add("/line", get(get_line))
+        .add("/line", put(update_line))
         .add("/uploads", post(upload_image))
 }

@@ -8,6 +8,48 @@ use super::prepare_data;
 
 #[tokio::test]
 #[serial]
+async fn staff_sets_line_settings_and_only_liff_id_is_public() {
+    request::<App, _, _>(|request, ctx| async move {
+        let staff = prepare_data::init_user_login(&request, &ctx).await;
+
+        let (k, v) = prepare_data::auth_header(&staff.token);
+        let put = request
+            .put("/api/studio/line")
+            .add_header(k, v)
+            .json(&serde_json::json!({ "liff_id": "123-abc", "channel_id": "2001" }))
+            .await;
+        assert_eq!(put.status_code(), 200);
+
+        // Staff read both values back.
+        let (k, v) = prepare_data::auth_header(&staff.token);
+        let got: Value = request
+            .get("/api/studio/line")
+            .add_header(k, v)
+            .await
+            .json();
+        assert_eq!(got["liff_id"], "123-abc");
+        assert_eq!(got["channel_id"], "2001");
+
+        // The public studio payload exposes liff_id (the LIFF client needs it)
+        // but must NOT leak the channel_id.
+        let pub_org: Value = request
+            .get(&format!(
+                "/api/public/organizations/{}",
+                staff.organization_public_id
+            ))
+            .await
+            .json();
+        assert_eq!(pub_org["liff_id"], "123-abc");
+        assert!(
+            pub_org.get("channel_id").is_none(),
+            "channel_id must never be exposed on the public endpoint"
+        );
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn staff_can_edit_and_public_can_read_the_page() {
     request::<App, _, _>(|request, ctx| async move {
         let user = prepare_data::init_user_login(&request, &ctx).await;

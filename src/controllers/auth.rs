@@ -224,9 +224,16 @@ async fn line_login(
         return bad_request("unknown studio");
     };
 
-    let channel_id = std::env::var("LINE_CHANNEL_ID")
-        .map_err(|_| Error::string("LINE_CHANNEL_ID is not configured"))?;
-    let identity = crate::services::line::verify_id_token(&req.id_token, &channel_id).await?;
+    // Each studio verifies against its own LINE channel. No channel set means
+    // this studio hasn't enabled LINE login.
+    let Some(channel_id) = organization
+        .line_channel_id
+        .as_deref()
+        .filter(|s| !s.is_empty())
+    else {
+        return bad_request("this studio has not enabled LINE login");
+    };
+    let identity = crate::services::line::verify_id_token(&req.id_token, channel_id).await?;
 
     let user =
         users::Model::create_with_line(&ctx.db, organization.id, &identity.sub, &identity.name)

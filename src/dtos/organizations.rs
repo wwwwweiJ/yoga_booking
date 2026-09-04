@@ -44,10 +44,17 @@ impl From<organizations::Model> for Organization {
 #[ts(export, export_to = "../frontend/src/bindings/")]
 pub struct PublicOrganization {
     pub name: String,
+    /// The studio's LINE LIFF id if it has enabled LINE login, else an empty
+    /// string. Public because the LIFF client needs it to initialise; the
+    /// Channel ID (used server-side to verify tokens) is never exposed here.
+    pub liff_id: String,
 }
 
 impl From<organizations::Model> for PublicOrganization {
     fn from(o: organizations::Model) -> Self {
-        Self { name: o.name }
+        Self {
+            name: o.name,
+            liff_id: o.line_liff_id.unwrap_or_default(),
+        }
     }
 }
