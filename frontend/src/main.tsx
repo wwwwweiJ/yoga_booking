@@ -12,7 +12,16 @@ if (!root) {
   throw new Error('No root element found')
 }
 
-const queryClient = new QueryClient()
+// staleTime keeps revisited tabs from refetching (and flashing) for a while;
+// no refetch on window focus, for the same reason.
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30_000,
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 ReactDOM.createRoot(root).render(
   <React.StrictMode>

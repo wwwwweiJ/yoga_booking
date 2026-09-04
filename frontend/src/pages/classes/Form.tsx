@@ -11,6 +11,7 @@ import {
   uploadClassPhoto,
 } from "../../api/classes";
 import { useI18n } from "../../i18n";
+import { Spinner } from "../../components/Spinner";
 
 // The API speaks RFC 3339 (UTC); <input type="datetime-local"> speaks a naive
 // local "YYYY-MM-DDTHH:mm". Convert at the edges so the wire format stays the
@@ -110,7 +111,7 @@ export function ClassForm() {
   }
 
   if (isEdit && existing.isPending) {
-    return <p>{t("common.loading")}</p>;
+    return <Spinner />;
   }
 
   return (

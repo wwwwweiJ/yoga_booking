@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router";
 import { cancelBooking, listBookings, payBooking } from "../../api/bookings";
 import { useI18n } from "../../i18n";
+import { Spinner } from "../../components/Spinner";
 
 export function BookingsList() {
   const queryClient = useQueryClient();
@@ -25,7 +26,7 @@ export function BookingsList() {
   });
 
   if (isPending) {
-    return <p>{t("common.loading")}</p>;
+    return <Spinner />;
   }
 
   if (isError) {

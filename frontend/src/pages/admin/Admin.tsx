@@ -11,6 +11,7 @@ import {
 } from "../../api/admin";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { useI18n } from "../../i18n";
+import { Spinner } from "../../components/Spinner";
 
 export function Admin() {
   const { t } = useI18n();
@@ -83,7 +84,7 @@ export function Admin() {
   });
 
   if (isPending) {
-    return <p>{t("common.loading")}</p>;
+    return <Spinner />;
   }
   if (!isAdmin) {
     return <p role="alert">{t("admin.forbidden")}</p>;

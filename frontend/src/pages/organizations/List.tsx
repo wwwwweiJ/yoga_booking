@@ -6,6 +6,7 @@ import { listOrganizations } from "../../api/organizations";
 import { getStudioLine, updateStudioLine } from "../../api/studio";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { useI18n } from "../../i18n";
+import { Spinner } from "../../components/Spinner";
 
 // A user belongs to one studio and can't create or edit it (studios are set up
 // by an operator), so this is a read-only view of "my studio" — except that a
@@ -44,7 +45,7 @@ export function OrganizationsList() {
   });
 
   if (isPending) {
-    return <p>{t("common.loading")}</p>;
+    return <Spinner />;
   }
 
   if (isError) {

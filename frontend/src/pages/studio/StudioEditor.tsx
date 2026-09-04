@@ -10,6 +10,7 @@ import {
 } from "../../api/studio";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { useI18n } from "../../i18n";
+import { Spinner } from "../../components/Spinner";
 
 const emptyTeacher = (): TeacherIntro => ({
   name: "",
@@ -69,7 +70,7 @@ export function StudioEditor() {
   });
 
   if (isPending || (isStaff && page.isPending)) {
-    return <p>{t("common.loading")}</p>;
+    return <Spinner />;
   }
   if (!isStaff) {
     return <p role="alert">{t("admin.forbidden")}</p>;

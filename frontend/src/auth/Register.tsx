@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router";
 import { ApiClientError, post } from "../api/client";
 import { getPublicOrganization } from "../api/public";
 import { useI18n } from "../i18n";
+import { Spinner } from "../components/Spinner";
 import { setToken } from "./token";
 
 interface LoginResponse {
@@ -65,7 +66,7 @@ export function Register() {
     return <p role="alert">{t("auth.register.invalidLink")}</p>;
   }
   if (studio.isPending) {
-    return <p>{t("common.loading")}</p>;
+    return <Spinner />;
   }
   if (studio.isError) {
     return <p role="alert">{t("auth.register.notFound")}</p>;

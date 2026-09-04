@@ -6,6 +6,7 @@ import {
   getPublicStudioPage,
 } from "../../api/studio";
 import { useI18n } from "../../i18n";
+import { Spinner } from "../../components/Spinner";
 
 // Teachers can enter a bare handle or a full URL for their links; normalise
 // both to an absolute href.
@@ -49,7 +50,7 @@ export function StudioPublicPage() {
   });
 
   if (q.isPending) {
-    return <p>{t("common.loading")}</p>;
+    return <Spinner />;
   }
   if (q.isError) {
     return <p role="alert">{t("auth.register.notFound")}</p>;
