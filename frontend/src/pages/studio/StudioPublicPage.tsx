@@ -38,6 +38,13 @@ export function StudioPublicPage() {
   return (
     <div>
       <h1>{name}</h1>
+      {token && (
+        <p style={{ marginBottom: "1rem" }}>
+          <Link className="btn" to={`/liff?studio=${token}`}>
+            {t("studio.bookWithLine")}
+          </Link>
+        </p>
+      )}
       {blocks.length === 0 && <p className="muted">{t("studio.emptyPage")}</p>}
       {blocks.map((block, i) => {
         if (block.type === "hero") {

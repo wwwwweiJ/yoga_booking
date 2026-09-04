@@ -65,3 +65,35 @@ impl From<users::Model> for AdminUser {
         }
     }
 }
+
+/// A user in a studio, for the backoffice roster + role management. `is_line`
+/// flags LINE-authenticated accounts (whose email is a synthetic placeholder),
+/// so the UI can show a LINE badge instead of that address.
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../frontend/src/bindings/")]
+pub struct AdminUserListItem {
+    pub pid: String,
+    pub name: String,
+    pub email: String,
+    pub role: String,
+    pub is_line: bool,
+}
+
+impl From<users::Model> for AdminUserListItem {
+    fn from(u: users::Model) -> Self {
+        Self {
+            pid: u.pid.to_string(),
+            name: u.name,
+            email: u.email,
+            role: u.role,
+            is_line: u.line_user_id.is_some(),
+        }
+    }
+}
+
+/// Body for changing a user's role from the backoffice (student ↔ teacher).
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[ts(export, export_to = "../frontend/src/bindings/")]
+pub struct SetRoleParams {
+    pub role: String,
+}

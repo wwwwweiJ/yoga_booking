@@ -324,6 +324,87 @@ async fn can_reset_password() {
 
 #[tokio::test]
 #[serial]
+async fn can_create_with_line() {
+    let boot = boot_test::<App>()
+        .await
+        .expect("Failed to boot test application");
+
+    let organization_id = seed_org(&boot.app_context.db).await;
+
+    let user =
+        Model::create_with_line(&boot.app_context.db, organization_id, "Uline123", "陳同學")
+            .await
+            .expect("a LINE user should be created");
+
+    assert_eq!(user.line_user_id.as_deref(), Some("Uline123"));
+    assert_eq!(user.organization_id, organization_id);
+    assert_eq!(user.name, "陳同學");
+    assert_eq!(user.role, "member", "LINE users start as plain members");
+    assert!(
+        user.email_verified_at.is_some(),
+        "LINE already vouched for the identity, so the account is pre-verified"
+    );
+    assert_eq!(
+        user.email,
+        format!("line_Uline123_{organization_id}@line.local"),
+        "the email is synthesized from the LINE id and org"
+    );
+    assert!(
+        !user.verify_password("Uline123"),
+        "the LINE id must never be usable as a password"
+    );
+}
+
+#[tokio::test]
+#[serial]
+async fn create_with_line_is_idempotent() {
+    let boot = boot_test::<App>()
+        .await
+        .expect("Failed to boot test application");
+
+    let organization_id = seed_org(&boot.app_context.db).await;
+
+    let first = Model::create_with_line(&boot.app_context.db, organization_id, "Udup", "阿明")
+        .await
+        .expect("first LINE login creates the user");
+    let second = Model::create_with_line(&boot.app_context.db, organization_id, "Udup", "阿明")
+        .await
+        .expect("second LINE login returns the same user");
+
+    assert_eq!(
+        first.id, second.id,
+        "a repeat LINE login must reuse the row, not create a second"
+    );
+    assert_eq!(first.pid, second.pid);
+}
+
+#[tokio::test]
+#[serial]
+async fn same_line_id_two_orgs_two_users() {
+    let boot = boot_test::<App>()
+        .await
+        .expect("Failed to boot test application");
+
+    let org_a = seed_org(&boot.app_context.db).await;
+    let org_b = seed_org(&boot.app_context.db).await;
+
+    let a = Model::create_with_line(&boot.app_context.db, org_a, "Ushared", "同一人")
+        .await
+        .expect("user in studio A");
+    let b = Model::create_with_line(&boot.app_context.db, org_b, "Ushared", "同一人")
+        .await
+        .expect("user in studio B");
+
+    assert_ne!(
+        a.id, b.id,
+        "the same LINE person at two studios is two separate users"
+    );
+    assert_eq!(a.organization_id, org_a);
+    assert_eq!(b.organization_id, org_b);
+}
+
+#[tokio::test]
+#[serial]
 async fn magic_link() {
     let boot = boot_test::<App>().await.unwrap();
     seed::<App>(&boot.app_context).await.unwrap();

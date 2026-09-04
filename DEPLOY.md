@@ -104,6 +104,37 @@ cargo loco task user:create \
 
 ---
 
+## Step 5 — LINE 登入(選用)
+
+讓學生和老師用 **LINE** 登入預約(在 LINE 裡點連結就自動用 LINE 身分進來,不用 email 密碼)。沒設定這步的話,一切照舊用 email/密碼,不受影響。
+
+**① 在 LINE Developers 建 channel**
+1. 開 <https://developers.line.biz/console/> → 建一個 **Provider**(沒有的話)。
+2. **Create channel → LINE Login**(不是 Messaging API)。
+3. **Basic settings** → 複製 **Channel ID**(一串數字)。
+
+**② 加一個 LIFF app**
+- 在該 channel 的 **LIFF** 分頁 → **Add**。
+- **Endpoint URL** 填 `https://<你的網域>/liff`(你部署後的網址,例如 `https://xxx.onrender.com/liff`)。
+- **Size** 選 `Full`;**Scopes** 勾 **`openid`** 和 **`profile`**(`email` 不用勾)。
+- 複製它的 **LIFF ID**(長得像 `1234567890-abcdEFGH`)。
+
+**③ 設兩個環境變數**(設在你部署服務的環境變數,跟 `DATABASE_URL` 放同一處)
+```
+LINE_CHANNEL_ID = 上面的 Channel ID(數字)
+LINE_LIFF_ID    = 上面的 LIFF ID
+```
+存檔後重新部署。後端用 `LINE_CHANNEL_ID` 向 LINE 驗證登入,前端向 `/api/public/config` 取 `LINE_LIFF_ID`(所以改這兩個值不用重 build image)。
+
+**④ 怎麼用**
+- 每間店的公開頁 `/studio/<public_id>` 會出現 **「用 LINE 預約」** 按鈕。
+- 要放進 LINE 官方帳號選單 / 貼給學生的連結格式:`https://liff.line.me/<LIFF_ID>?studio=<public_id>`(`studio` 帶哪間店的 `public_id`,就把人加進哪間店)。
+- **老師也走 LINE**:老師先用 LINE 登入(預設是學生身分),再由管理員到 **/admin → 工作室成員** 把他 **設為老師**。
+
+> LINE 使用者沒有 email/密碼(系統內部用一組佔位 email),所以他們不能用 email 登入或忘記密碼 —— 一律走 LINE。同一個人加入不同工作室會是不同帳號,跟 email 註冊的規則一致。
+
+---
+
 ## 幾個要知道的限制(免費方案)
 
 - **上傳的圖片不會永久保存**:老師照片 / 工作室頁圖片存在容器本機磁碟(local storage),Koyeb 重新部署會清空 → 圖片會不見。demo 夠用;要永久保存得改接物件儲存(S3 之類),之後再說。

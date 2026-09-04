@@ -6,6 +6,8 @@ import {
   createAdminOrganization,
   createStaff,
   listAdminOrganizations,
+  listAdminUsers,
+  setUserRole,
 } from "../../api/admin";
 import { useCurrentUser } from "../../auth/useCurrentUser";
 import { useI18n } from "../../i18n";
@@ -65,6 +67,21 @@ export function Admin() {
       ),
   });
 
+  // Members of a studio + role management. This is how a teacher who signed in
+  // with LINE (and so starts as a plain member) gets promoted to staff.
+  const [usersOrg, setUsersOrg] = useState<number | "">("");
+  const members = useQuery({
+    queryKey: ["admin-users", usersOrg],
+    queryFn: () => listAdminUsers(usersOrg as number),
+    enabled: isAdmin && usersOrg !== "",
+  });
+  const changeRole = useMutation({
+    mutationFn: (vars: { pid: string; role: string }) =>
+      setUserRole(vars.pid, vars.role),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["admin-users", usersOrg] }),
+  });
+
   if (isPending) {
     return <p>{t("common.loading")}</p>;
   }
@@ -73,6 +90,12 @@ export function Admin() {
   }
 
   const origin = window.location.origin;
+  const roleLabel = (role: string) =>
+    role === "admin"
+      ? t("admin.roleAdmin")
+      : role === "staff"
+        ? t("admin.roleStaff")
+        : t("admin.roleMember");
 
   return (
     <div>
@@ -211,6 +234,81 @@ export function Admin() {
           {staffOk && <p className="muted">{t("admin.teacherCreated")}</p>}
           {staffError && <p role="alert">{staffError}</p>}
         </form>
+      </div>
+
+      <div className="card" style={{ marginTop: "1.5rem" }}>
+        <h2>{t("admin.members")}</h2>
+        <div>
+          <label htmlFor="usersOrg">{t("admin.studio")}</label>
+          <select
+            id="usersOrg"
+            value={usersOrg}
+            onChange={(e) =>
+              setUsersOrg(e.target.value === "" ? "" : Number(e.target.value))
+            }
+          >
+            <option value="">{t("admin.selectStudio")}</option>
+            {orgs.data?.map((org) => (
+              <option key={org.id} value={org.id}>
+                {org.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {usersOrg !== "" &&
+          (members.data && members.data.length > 0 ? (
+            <table style={{ marginTop: "1rem" }}>
+              <thead>
+                <tr>
+                  <th>{t("auth.name")}</th>
+                  <th>{t("admin.role")}</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {members.data.map((u) => (
+                  <tr key={u.pid}>
+                    <td>
+                      {u.name}{" "}
+                      {u.is_line && (
+                        <span className="badge badge-open">LINE</span>
+                      )}
+                    </td>
+                    <td>{roleLabel(u.role)}</td>
+                    <td>
+                      {u.role === "member" && (
+                        <button
+                          type="button"
+                          disabled={changeRole.isPending}
+                          onClick={() =>
+                            changeRole.mutate({ pid: u.pid, role: "staff" })
+                          }
+                        >
+                          {t("admin.makeTeacher")}
+                        </button>
+                      )}
+                      {u.role === "staff" && (
+                        <button
+                          type="button"
+                          disabled={changeRole.isPending}
+                          onClick={() =>
+                            changeRole.mutate({ pid: u.pid, role: "member" })
+                          }
+                        >
+                          {t("admin.makeStudent")}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p className="muted" style={{ marginTop: "1rem" }}>
+              {t("admin.noMembers")}
+            </p>
+          ))}
       </div>
     </div>
   );

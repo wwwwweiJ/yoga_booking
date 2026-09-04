@@ -1,6 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 import { App } from './App'
 import { Login } from './auth/Login'
+import { LiffLogin } from './auth/LiffLogin'
 import { Register } from './auth/Register'
 import { RequireAuth } from './auth/RequireAuth'
 import { Home } from './pages/Home'
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: 'login', element: <Login /> },
+      { path: 'liff', element: <LiffLogin /> },
       { path: 'register/:token', element: <Register /> },
       { path: 'studio/:token', element: <StudioPublicPage /> },
       {

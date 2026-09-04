@@ -122,6 +122,75 @@ async fn create_teacher_duplicate_email_is_409() {
 
 #[tokio::test]
 #[serial]
+async fn admin_can_list_users_and_promote_member_to_teacher() {
+    request::<App, _, _>(|request, ctx| async move {
+        let admin = prepare_data::init_admin_login(&request, &ctx).await;
+        // A second account — a plain member — in the admin's own studio.
+        let student = prepare_data::register_and_login(
+            &request,
+            "student@example.com",
+            &admin.organization_public_id,
+        )
+        .await;
+
+        // The studio's users are listed for the operator.
+        let (k, v) = prepare_data::auth_header(&admin.token);
+        let list: Value = request
+            .get(&format!(
+                "/api/admin/users?organization_id={}",
+                admin.organization_id
+            ))
+            .add_header(k, v)
+            .await
+            .json();
+        let emails: Vec<&str> = list
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|u| u["email"].as_str())
+            .collect();
+        assert!(emails.contains(&"student@example.com"));
+
+        // Promote that member to a teacher.
+        let (k, v) = prepare_data::auth_header(&admin.token);
+        let res = request
+            .post(&format!("/api/admin/users/{}/role", student.pid))
+            .add_header(k, v)
+            .json(&serde_json::json!({ "role": "staff" }))
+            .await;
+        assert_eq!(res.status_code(), 200);
+        let body: Value = res.json();
+        assert_eq!(body["role"], "staff", "the member is now a teacher");
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
+async fn set_role_to_admin_is_rejected() {
+    request::<App, _, _>(|request, ctx| async move {
+        let admin = prepare_data::init_admin_login(&request, &ctx).await;
+        let student = prepare_data::register_and_login(
+            &request,
+            "student2@example.com",
+            &admin.organization_public_id,
+        )
+        .await;
+
+        // The backoffice toggles student ↔ teacher only; it can't mint admins.
+        let (k, v) = prepare_data::auth_header(&admin.token);
+        let res = request
+            .post(&format!("/api/admin/users/{}/role", student.pid))
+            .add_header(k, v)
+            .json(&serde_json::json!({ "role": "admin" }))
+            .await;
+        assert_eq!(res.status_code(), 400);
+    })
+    .await;
+}
+
+#[tokio::test]
+#[serial]
 async fn create_teacher_unknown_studio_is_400() {
     request::<App, _, _>(|request, ctx| async move {
         let admin = prepare_data::init_admin_login(&request, &ctx).await;

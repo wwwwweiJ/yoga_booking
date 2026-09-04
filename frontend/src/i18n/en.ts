@@ -20,6 +20,15 @@ export const en = {
   "admin.creating": "Creating…",
   "admin.createFailed": "Could not create",
   "admin.teacherCreated": "Teacher created — share the studio's register link.",
+  "admin.members": "Members",
+  "admin.role": "Role",
+  "admin.selectStudio": "Select a studio…",
+  "admin.noMembers": "No members in this studio yet.",
+  "admin.makeTeacher": "Make teacher",
+  "admin.makeStudent": "Make student",
+  "admin.roleMember": "Student",
+  "admin.roleStaff": "Teacher",
+  "admin.roleAdmin": "Admin",
 
   "common.loading": "Loading…",
   "common.total": "{count} total",
@@ -47,6 +56,9 @@ export const en = {
   "auth.register.notFound":
     "This studio could not be found — check the register link your studio gave you.",
   "auth.register.haveAccount": "Already have an account?",
+  "auth.line.loggingIn": "Signing in with LINE…",
+  "auth.line.failed": "LINE sign-in failed. Please try again.",
+  "auth.line.notConfigured": "LINE sign-in isn't available for this studio.",
 
   "classes.title": "Classes",
   "classes.new": "New class",
@@ -127,6 +139,7 @@ export const en = {
   "studio.block.schedule": "Schedule",
   "studio.scheduleHint": "Shows your upcoming classes on the public page.",
   "studio.registerToBook": "Register to book",
+  "studio.bookWithLine": "Book with LINE",
   "studio.noUpcoming": "No upcoming classes.",
   "studio.heading": "Heading",
   "studio.subheading": "Subheading",

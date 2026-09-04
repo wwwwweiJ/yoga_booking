@@ -39,6 +39,12 @@ uuid = { version = "1.6", features = ["v4"] }
 ts-rs = { version = "12", features = ["chrono-impl", "serde-compat"] }
 include_dir = { version = "0.7" }
 axum-extra = { version = "0.10", features = ["form"] }
+# Verifies LINE (LIFF) id tokens against LINE's server. rustls-only to match
+# the rest of the stack (no OpenSSL); default features off keeps native-tls out.
+reqwest = { version = "0.12", default-features = false, features = [
+  "json",
+  "rustls-tls",
+] }
 
 [[bin]]
 name = "yoga_booking-cli"

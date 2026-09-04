@@ -68,7 +68,9 @@ Everything requires a JWT (`Authorization: Bearer <token>`) except the
 | --- | --- | --- |
 | `POST` | `/api/auth/register` | join a studio (`{ …, organization_token }`); dup email → 409 |
 | `POST` | `/api/auth/login` | returns a JWT |
+| `POST` | `/api/auth/line` | **public** — LINE (LIFF) login into a studio (`{ id_token, organization_token }`) |
 | `GET` | `/api/auth/current` | the caller (incl. `role`) |
+| `GET` | `/api/public/config` | **public** — runtime `{ liff_id }` for the SPA |
 | `GET` | `/api/public/organizations/{token}` | **public** — a studio's `{ name }` |
 | `GET` | `/api/public/organizations/{token}/page` | **public** — a studio's page (name + blocks) |
 | `GET` | `/api/organizations` · `/api/organizations/{id}` | your studio only |
@@ -82,6 +84,8 @@ Everything requires a JWT (`Authorization: Bearer <token>`) except the
 | `GET/PUT` | `/api/studio/page` | my studio's page (staff) |
 | `GET/POST` | `/api/admin/organizations` | admin — list / create studios |
 | `POST` | `/api/admin/staff` | admin — create a teacher for a studio |
+| `GET` | `/api/admin/users` | admin — a studio's users (`?organization_id=`) |
+| `POST` | `/api/admin/users/{pid}/role` | admin — set a user's role (member ↔ staff) |
 
 Status codes: `201` create, `204` delete, `400` invalid input / bad reference,
 `403` wrong role, `404` absent or another studio's, `409` conflict (dup email,
@@ -122,6 +126,16 @@ studios and add teachers (each studio shows its `/register/<token>` link).
 Teachers open classes, set prices, upload photos, and arrange their studio page
 (`/studio/edit`); students register via a studio's `/register/<token>` link,
 book classes, and pay. A studio's public page lives at `/studio/<token>`.
+
+### LINE login (optional)
+
+Students and teachers can sign in with **LINE** instead of email/password: a
+studio page shows a "Book with LINE" button (`/liff?studio=<token>`) that runs
+the LIFF flow, verifies the LINE id token server-side, and finds-or-creates the
+user in that studio (as a `member`). Teachers sign in the same way, then an
+admin promotes them under **/admin → Members**. Enable it by setting
+`LINE_CHANNEL_ID` + `LINE_LIFF_ID` — see [DEPLOY.md](DEPLOY.md) Step 5 for the
+LINE Developers console setup. Unset, the feature is simply hidden.
 
 ## Testing
 

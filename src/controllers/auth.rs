@@ -51,6 +51,15 @@ pub struct RegisterRequest {
     pub organization_token: String,
 }
 
+/// LINE (LIFF) login request. `id_token` is the token the LIFF client obtained
+/// from LINE; `organization_token` names the studio via its public token, the
+/// same non-guessable handle `/register` uses.
+#[derive(Debug, Deserialize, Serialize)]
+pub struct LineLoginRequest {
+    pub id_token: String,
+    pub organization_token: String,
+}
+
 /// Register function creates a new user with the given parameters and sends a
 /// welcome email to the user
 #[debug_handler]
@@ -198,6 +207,39 @@ async fn current(auth: auth::JWT, State(ctx): State<AppContext>) -> Result<Respo
     format::json(CurrentResponse::new(&user))
 }
 
+/// Log in with a LINE account, scoped to a studio. First-time visitors are
+/// registered on the fly (as a `member`); returning ones are logged in. The
+/// LINE `id_token` is verified with LINE before we trust it. Unlike `register`,
+/// no welcome mail is sent — LINE users have no routable address.
+#[debug_handler]
+async fn line_login(
+    State(ctx): State<AppContext>,
+    Json(req): Json<LineLoginRequest>,
+) -> Result<Response> {
+    let Ok(public_id) = req.organization_token.parse::<uuid::Uuid>() else {
+        return bad_request("unknown studio");
+    };
+    let Ok(organization) = organizations::Model::find_by_public_id(&ctx.db, &public_id).await
+    else {
+        return bad_request("unknown studio");
+    };
+
+    let channel_id = std::env::var("LINE_CHANNEL_ID")
+        .map_err(|_| Error::string("LINE_CHANNEL_ID is not configured"))?;
+    let identity = crate::services::line::verify_id_token(&req.id_token, &channel_id).await?;
+
+    let user =
+        users::Model::create_with_line(&ctx.db, organization.id, &identity.sub, &identity.name)
+            .await?;
+
+    let jwt_secret = ctx.config.get_jwt_config()?;
+    let token = user
+        .generate_jwt(&jwt_secret.secret, jwt_secret.expiration)
+        .or_else(|_| unauthorized("unauthorized!"))?;
+
+    format::json(LoginResponse::new(&user, &token))
+}
+
 /// Magic link authentication provides a secure and passwordless way to log in to the application.
 ///
 /// # Flow
@@ -298,6 +340,7 @@ pub fn routes() -> Routes {
         .add("/register", post(register))
         .add("/verify/{token}", get(verify))
         .add("/login", post(login))
+        .add("/line", post(line_login))
         .add("/forgot", post(forgot))
         .add("/reset", post(reset))
         .add("/current", get(current))

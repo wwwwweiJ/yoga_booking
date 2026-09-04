@@ -67,6 +67,27 @@ async fn can_register() {
     .await;
 }
 
+#[tokio::test]
+#[serial]
+async fn line_login_unknown_studio_is_400() {
+    request::<App, _, _>(|request, _ctx| async move {
+        // A malformed studio token is rejected before any LINE call, so this
+        // needs neither a real id_token nor LINE_CHANNEL_ID configured.
+        let payload = serde_json::json!({
+            "id_token": "irrelevant",
+            "organization_token": "not-a-studio",
+        });
+
+        let response = request.post("/api/auth/line").json(&payload).await;
+        assert_eq!(
+            response.status_code(),
+            400,
+            "an unknown studio token must be a 400, before LINE is contacted"
+        );
+    })
+    .await;
+}
+
 #[rstest]
 #[case("login_with_valid_password", "12341234")]
 #[case("login_with_invalid_password", "invalid-password")]

@@ -290,6 +290,78 @@ impl Model {
         Ok(user)
     }
 
+    /// Finds the user for a LINE account within one studio, if any.
+    ///
+    /// Identity is the `(organization_id, line_user_id)` pair, so a lookup is
+    /// always scoped to a single studio.
+    ///
+    /// # Errors
+    ///
+    /// When the DB query fails.
+    pub async fn find_by_line_user_id(
+        db: &DatabaseConnection,
+        organization_id: i64,
+        line_user_id: &str,
+    ) -> ModelResult<Option<Self>> {
+        Ok(users::Entity::find()
+            .filter(users::Column::OrganizationId.eq(organization_id))
+            .filter(users::Column::LineUserId.eq(line_user_id))
+            .one(db)
+            .await?)
+    }
+
+    /// Find-or-create the user for a LINE account within a studio (the LINE
+    /// login equivalent of `create_with_password`).
+    ///
+    /// LINE users have no password and no real email, so those NOT NULL columns
+    /// are synthesized: an unroutable, unique `line_{sub}_{org}@line.local`
+    /// address and a random, unusable password hash. The account is marked
+    /// verified because LINE already vouched for the identity. Returning
+    /// visitors are simply logged in.
+    ///
+    /// # Errors
+    ///
+    /// When the DB query or insert fails.
+    pub async fn create_with_line(
+        db: &DatabaseConnection,
+        organization_id: i64,
+        line_user_id: &str,
+        name: &str,
+    ) -> ModelResult<Self> {
+        if let Some(user) =
+            Self::find_by_line_user_id(db, organization_id, line_user_id).await?
+        {
+            return Ok(user);
+        }
+
+        let synthetic_email = format!("line_{line_user_id}_{organization_id}@line.local");
+        let password_hash = hash::hash_password(&Uuid::new_v4().to_string())
+            .map_err(|e| ModelError::Any(e.into()))?;
+
+        let result = users::ActiveModel {
+            email: ActiveValue::set(synthetic_email),
+            password: ActiveValue::set(password_hash),
+            name: ActiveValue::set(name.to_owned()),
+            organization_id: ActiveValue::set(organization_id),
+            line_user_id: ActiveValue::set(Some(line_user_id.to_owned())),
+            email_verified_at: ActiveValue::set(Some(chrono::Utc::now().fixed_offset())),
+            ..Default::default()
+        }
+        .insert(db)
+        .await;
+
+        match result {
+            Ok(user) => Ok(user),
+            // Two concurrent first-logins for the same LINE account race here;
+            // the partial unique index rejects the loser. If the row now exists,
+            // return it — the caller just wanted to be logged in.
+            Err(err) => match Self::find_by_line_user_id(db, organization_id, line_user_id).await? {
+                Some(user) => Ok(user),
+                None => Err(err.into()),
+            },
+        }
+    }
+
     /// Creates a JWT
     ///
     /// # Errors
